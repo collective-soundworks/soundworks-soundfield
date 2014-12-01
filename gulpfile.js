@@ -7,7 +7,15 @@ var rename = require('gulp-rename');
 var transform = require('vinyl-transform');
 var watch = require('gulp-watch');
 
-gulp.task('browserify', ['transpile', 'clean'], function() {
+var watchOthers = ['node_modules/matrix/'];
+
+var tasks = ['transpile-app', 'clean'];
+if (watchOthers && watchOthers.length) {
+  tasks.unshift('transpile-lib');
+  console.log(tasks);
+}
+
+gulp.task('browserify', tasks, function() {
   return gulp.src(['src/**/index.js', '!src/server/index.js'])
     .pipe(transform(function(filename) {
       return browserify(filename).bundle();
@@ -24,7 +32,7 @@ gulp.task('clean', function() {
     .pipe(clean());
 });
 
-gulp.task('transpile', function() {
+gulp.task('transpile-app', function() {
   return gulp.src('src/*/*.es6.js')
     .pipe(es6({
       disallowUnknownReferences: false
@@ -35,8 +43,27 @@ gulp.task('transpile', function() {
     .pipe(gulp.dest('src/'));
 });
 
+gulp.task('transpile-lib', function() {
+  watchOthers.forEach(function(otherPath) {
+    gulp.src(otherPath + '*/*.es6.js')
+      .pipe(es6({
+        disallowUnknownReferences: false
+      }))
+      .pipe(rename(function(path) {
+        path.basename = path.basename.replace('.es6', '');
+      }))
+      .pipe(gulp.dest(otherPath));
+  });
+});
+
 gulp.task('watch', function() {
-  return gulp.watch(['src/**/*.es6.js'], ['browserify']);
+  gulp.watch(['src/**/*.es6.js'], ['browserify']);
+
+  if (watchOthers && watchOthers.length) {
+    watchOthers.forEach(function(otherPath) {
+      gulp.watch(otherPath + '*/*.es6.js', ['browserify']);
+    });
+  }
 });
 
 gulp.task('serve', function() {
