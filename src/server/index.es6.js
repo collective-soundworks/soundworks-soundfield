@@ -1,5 +1,5 @@
 /**
- * setup server 
+ * setup server
  */
 var serverSide = require('matrix/server');
 var http = require('http');
@@ -15,57 +15,60 @@ app.set('view engine', 'jade');
 app.use(express.static(path.join(__dirname, '../../public')));
 
 app.get('/', function(req, res) {
-	res.render('player', {
-		title: 'The Matrix'
-	});
+  res.render('player', {
+    title: 'The Matrix'
+  });
 });
 
 app.get('/env', function(req, res) {
-	res.render('env', {
-		title: 'The Matrix — Environment'
-	});
+  res.render('env', {
+    title: 'The Matrix — Environment'
+  });
 });
 
 httpServer.listen(app.get('port'), function() {
-	console.log('Server listening on port', app.get('port'));
+  console.log('Server listening on port', app.get('port'));
 });
 
 /**
- * setup performance 
+ * setup performance
  */
 var WsServerPerformanceManager = require('./WsServerPerformanceManager');
-var topologyManager = new serverSide.TopologyManagerSimpleMatrix({"X": 3, "Y": 2});
-var playerManager = new serverSide.PlayerManager();
-var connectionManager = new serverSide.ConnectionManager();
-var soloistManager = new serverSide.SoloistManagerRandomUrn(playerManager);
-var placementManager = new serverSide.PlacementManagerAssignedPlaces(topologyManager);
-var preparationManager = new serverSide.PreparationManagerPlacementAndSync(placementManager, null);
-var performanceManager = new WsServerPerformanceManager(playerManager, topologyManager, soloistManager); // TODO: Revise in generic class.
+var topologyManager = new serverSide.TopologyManagerRegularMatrix({"X": 3, "Y": 2});
 
-connectionManager.on('connected', (socket) => {
-	topologyManager.sendToClient(socket);
-	playerManager.connect(socket);
-});
+topologyManager.on('ready', () => {
+  var playerManager = new serverSide.PlayerManager();
+  var connectionManager = new serverSide.ConnectionManager();
+  var soloistManager = new serverSide.SoloistManagerRandomUrn(playerManager);
+  var placementManager = new serverSide.PlacementManagerAssignedPlaces(topologyManager);
+  var preparationManager = new serverSide.PreparationManagerPlacementAndSync(placementManager, null);
+  var performanceManager = new WsServerPerformanceManager(playerManager, topologyManager, soloistManager); // TODO: Revise in generic class.
 
-connectionManager.on('disconnected', (socket) => {
-	playerManager.disconnect(socket);
-});
+  connectionManager.on('connected', (socket) => {
+    topologyManager.sendToClient(socket);
+    playerManager.connect(socket);
+  });
 
-playerManager.on('connected', (client) => {
-	placementManager.requestPlace(client);
-});
+  connectionManager.on('disconnected', (socket) => {
+    playerManager.disconnect(socket);
+  });
 
-playerManager.on('disconnected', (client) => {
-	performanceManager.removeParticipant(client);
-	soloistManager.removePlayer(client);
-	placementManager.releasePlace(client);
-});
+  playerManager.on('connected', (client) => {
+    placementManager.requestPlace(client);
+  });
 
-preparationManager.on('ready', (client) => {
-	playerManager.clientReady(client);
-});
+  playerManager.on('disconnected', (client) => {
+    performanceManager.removeParticipant(client);
+    soloistManager.removePlayer(client);
+    placementManager.releasePlace(client);
+  });
 
-playerManager.on('playing', (client) => {
-	performanceManager.addParticipant(client);
-	soloistManager.addPlayer(client);
+  preparationManager.on('ready', (client) => {
+    playerManager.clientReady(client);
+  });
+
+  playerManager.on('playing', (client) => {
+    performanceManager.addParticipant(client);
+    soloistManager.addPlayer(client);
+  });
 });

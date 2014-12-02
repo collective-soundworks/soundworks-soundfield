@@ -14,5 +14,5 @@ window.addEventListener('load', () => {
       performanceManager.start(placeInfo);
     });
   });
-  
+
 });
