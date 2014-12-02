@@ -66,7 +66,7 @@ gulp.task('watch', function() {
   }
 });
 
-gulp.task('serve', function() {
+gulp.task('serve', ['transpile-app', 'transpile-lib'], function() {
   return nodemon({
     script: './src/server/index.js',
     ext: 'js html',

@@ -1,10 +1,10 @@
 var matrixServer = require('matrix/server');
-var ServerDynamicModel = matrixServer.DynamicModel;
-var io = matrixServer.IOSingleton.io;
+var ServerPerformanceManager = matrixServer.PerformanceManager;
+var server = matrixServer.ioServer;
 
 'use strict';
 
-class WanderingSoundServerDynamicModel extends ServerDynamicModel {
+class WanderingSoundServerPerformanceManager extends ServerPerformanceManager {
   constructor(clientManager, topologyModel, soloistManager) {
     super(clientManager, topologyModel);
 
@@ -51,6 +51,8 @@ class WanderingSoundServerDynamicModel extends ServerDynamicModel {
       let soloistId = client.userData.soloistId;
       let dSub = 1;
       let s = 0;
+      let io = server.io;
+
       switch(type) {
 
         case 'touchend':
@@ -85,6 +87,4 @@ class WanderingSoundServerDynamicModel extends ServerDynamicModel {
   }
 }
 
-
-
-module.exports = WanderingSoundServerDynamicModel;
+module.exports = WanderingSoundServerPerformanceManager;

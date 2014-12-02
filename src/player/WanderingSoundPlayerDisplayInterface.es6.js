@@ -1,7 +1,7 @@
-window.container = window.container || document.getElementById('container');
-var matrix = require('matrix/client');
+var matrixClient = require('matrix/client');
+var ClientTopologyDisplayMatrix = matrixClient.TopologyDisplayMatrix;
 
-var TopologyDisplayMatrix = matrix.TopologyDisplayMatrix;
+window.container = window.container || document.getElementById('container');
 
 'use strict';
 
@@ -11,7 +11,7 @@ class WanderingSoundPlayerDisplayInterface {
 
     this.__topology = topology;
     this.__topologyDiv = this.createTopologyDiv();
-    this.__topologyDisplay = new TopologyDisplayMatrix(this.__topology, this.__topologyDiv);
+    this.__topologyDisplay = new ClientTopologyDisplayMatrix(this.__topology, this.__topologyDiv);
   }
 
   addClassToTile(place, className) {

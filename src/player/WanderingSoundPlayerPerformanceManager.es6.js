@@ -1,19 +1,33 @@
-var matrix = require('matrix/client');
-var matrixSynths = require('matrix/synths');
-
-var AudioCue = matrix.AudioCue;
-var ClientDynamicModel = matrix.DynamicModel;
-var ClientInput = matrix.Input;
-var ClientTopologyDisplayMatrix = matrix.TopologyDisplayMatrix;
-var SynthNoise = matrixSynths.Noise;
-var SynthDrone = matrixSynths.Drone;
-var SynthJodlowski = matrixSynths.Jodlowski;
-var SynthBirds = matrixSynths.Birds;
+var matrixClient = require('matrix/client');
+var ClientPerformanceManager = matrixClient.PerformanceManager;
+var ClientInput = matrixClient.Input;
+var ClientTopologyDisplayMatrix = matrixClient.TopologyDisplayMatrix;
 var WanderingSoundPlayerDisplayInterface = require('./WanderingSoundPlayerDisplayInterface');
+var SimpleSynth = require('./SimpleSynth');
 
 'use strict';
 
-class WanderingSoundPlayerDynamicModel extends ClientDynamicModel {
+function beep() {
+  var time = audioContext.currentTime;
+  var duration = 0.2;
+  var attack = 0.001;
+
+  var g = audioContext.createGain();
+  g.connect(audioContext.destination);
+  g.gain.value = 0;
+  g.gain.setValueAtTime(0, time);
+  g.gain.linearRampToValueAtTime(0.5, time + attack);
+  g.gain.exponentialRampToValueAtTime(0.0000001, time + duration);
+  g.gain.setValueAtTime(0, time);
+
+  var o = audioContext.createOscillator();
+  o.connect(g);
+  o.frequency.value = 600;
+  o.start(time);
+  o.stop(time + duration);
+}
+
+class WanderingSoundPlayerPerformanceManager extends ClientPerformanceManager {
   constructor(input, topology) {
     super(input);
 
@@ -23,11 +37,7 @@ class WanderingSoundPlayerDynamicModel extends ClientDynamicModel {
     this.__place = null;
     this.__position = null;
 
-    this.__synths = [ new SynthNoise(), new SynthDrone() ];
-    // this.__synths = [ new SynthJodlowski("sounds/water.mp3"), new SynthJodlowski("sounds/stone.mp3") ];
-    // this.__synths = [ 
-    //   new SynthBirds("sounds/turdus_merula.mp3", "sounds/turdus_merula-markers.json"), 
-    //   new SynthBirds("sounds/vanellus_vanellus.mp3", "sounds/vanellus_vanellus-markers.json") ];
+    this.__synths = [ new SimpleSynth(false), new SimpleSynth(true) ];
 
     this.topologyListener();
     this.clientManagementListener();
@@ -78,7 +88,7 @@ class WanderingSoundPlayerDynamicModel extends ClientDynamicModel {
         this.__input.enableTouch(this.__displayInterface.__topologyDiv);
         this.__displayInterface.displayTopologyDiv();
         this.__displayInterface.hideInformationDiv();
-        matrix.AudioCue.beep();
+        beep();
       }
     });
 
@@ -125,4 +135,4 @@ class WanderingSoundPlayerDynamicModel extends ClientDynamicModel {
 
 }
 
-module.exports = WanderingSoundPlayerDynamicModel;
+module.exports = WanderingSoundPlayerPerformanceManager;

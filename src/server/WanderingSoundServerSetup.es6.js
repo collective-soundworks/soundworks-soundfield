@@ -2,16 +2,16 @@ var matrixServer = require('matrix/server');
 var ServerPlayerManager = matrixServer.PlayerManager;
 var ServerConnectionManager = matrixServer.ConnectionManager;
 var ServerPlacementManagerAssignedPlaces = matrixServer.PlacementManagerAssignedPlaces;
-var ServerPreparationManagerPlacement = matrixServer.PreparationManagerPlacement;
+var ServerPreparationManagerPlacementAndSync = matrixServer.PreparationManagerPlacementAndSync;
 var ServerSoloistManagerRandomUrn = matrixServer.SoloistManagerRandomUrn;
 var ServerTopologyModelSimpleMatrix = matrixServer.TopologyModelSimpleMatrix;
-var WanderingSoundServerDynamicModel = require('./WanderingSoundServerDynamicModel');
+var WanderingSoundServerPerformanceManager = require('./WanderingSoundServerPerformanceManager');
 
 'use strict';
 
-class WanderingSoundServerMatrix {
-  constructor(matrixParameters) {
-    var topologyModel = new ServerTopologyModelSimpleMatrix(matrixParameters, this.setup);
+class WanderingSoundServerSetup {
+  constructor(params) {
+    var topologyModel = new ServerTopologyModelSimpleMatrix(params, this.setup);
   }
 
   setup() {
@@ -19,9 +19,9 @@ class WanderingSoundServerMatrix {
     var playerManager = new ServerPlayerManager();
     var connectionManager = new ServerConnectionManager();
     var soloistManager = new ServerSoloistManagerRandomUrn(playerManager);
-    var dynamicModel = new WanderingSoundServerDynamicModel(playerManager, topologyModel, soloistManager); // TODO: Revise in generic class.
+    var performanceManager = new WanderingSoundServerPerformanceManager(playerManager, topologyModel, soloistManager); // TODO: Revise in generic class.
     var placementManager = new ServerPlacementManagerAssignedPlaces(topologyModel);
-    var preparationManager = new ServerPreparationManagerPlacement(placementManager);
+    var preparationManager = new ServerPreparationManagerPlacementAndSync(placementManager, null);
 
     connectionManager.on('connected', (socket) => {
       topologyModel.sendToClient(socket);
@@ -37,7 +37,7 @@ class WanderingSoundServerMatrix {
     });
 
     playerManager.on('disconnected', (client) => {
-      dynamicModel.removeParticipant(client);
+      performanceManager.removeParticipant(client);
       soloistManager.removePlayer(client);
       placementManager.releasePlace(client);
     });
@@ -47,10 +47,10 @@ class WanderingSoundServerMatrix {
     });
 
     playerManager.on('playing', (client) => {
-      dynamicModel.addParticipant(client);
+      performanceManager.addParticipant(client);
       soloistManager.addPlayer(client);
     });
   }
 }
 
-module.exports = WanderingSoundServerMatrix;
+module.exports = WanderingSoundServerSetup;
