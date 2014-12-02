@@ -5,7 +5,7 @@ window.container = window.container || document.getElementById('container');
 
 'use strict';
 
-class WanderingSoundPlayerDisplayInterface {
+class PlayerGui {
   constructor(topology) {
     this.__informationDiv = this.createInformationDiv();
 
@@ -95,4 +95,4 @@ class WanderingSoundPlayerDisplayInterface {
 
 }
 
-module.exports = WanderingSoundPlayerDisplayInterface;
+module.exports = PlayerGui;

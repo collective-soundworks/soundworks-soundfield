@@ -1,12 +1,11 @@
-var matrixServer = require('matrix/server');
-var ServerPerformanceManager = matrixServer.PerformanceManager;
-var server = matrixServer.ioServer;
+var serverSide = require('matrix/server');
+var ioServer = serverSide.ioServer;
 
 'use strict';
 
-class WanderingSoundServerPerformanceManager extends ServerPerformanceManager {
-  constructor(clientManager, topologyModel, soloistManager) {
-    super(clientManager, topologyModel);
+class WsServerPerformanceManager extends serverSide.PerformanceManager {
+  constructor(clientManager, topologyManager, soloistManager) {
+    super(clientManager, topologyManager);
 
     this.__soloistManager = soloistManager;
 
@@ -14,8 +13,8 @@ class WanderingSoundServerPerformanceManager extends ServerPerformanceManager {
   }
 
   calculateDistance(a, b) { // TODO: move to utils module?
-    var h = this.__topologyModel.height;
-    var w = this.__topologyModel.width;
+    var h = this.__topologyManager.height;
+    var w = this.__topologyManager.width;
     if (w / h < 1)
       return Math.sqrt(Math.pow((a[0] - b[0]) * w / h, 2) + Math.pow(a[1] - b[1], 2));
     else
@@ -48,11 +47,11 @@ class WanderingSoundServerPerformanceManager extends ServerPerformanceManager {
     // he is no longer a performer on the server.)
     var index = this.__soloistManager.__soloists.map((s) => s.socket.id).indexOf(socket.id);
     if (index > -1) {
+      let io = ioServer.io;
       let client = this.__clientManager.__sockets[socket.id];
       let soloistId = client.userData.soloistId;
       let dSub = 1;
       let s = 0;
-      let io = server.io;
 
       switch(type) {
 
@@ -88,4 +87,4 @@ class WanderingSoundServerPerformanceManager extends ServerPerformanceManager {
   }
 }
 
-module.exports = WanderingSoundServerPerformanceManager;
+module.exports = WsServerPerformanceManager;

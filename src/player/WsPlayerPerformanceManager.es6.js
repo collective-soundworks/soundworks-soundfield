@@ -1,9 +1,6 @@
+var clientSide = require('matrix/client');
 var audioContext = require('audio-context');
-var matrixClient = require('matrix/client');
-var ClientPerformanceManager = matrixClient.PerformanceManager;
-var ClientInput = matrixClient.Input;
-var ClientTopologyDisplayMatrix = matrixClient.TopologyDisplayMatrix;
-var WanderingSoundPlayerDisplayInterface = require('./WanderingSoundPlayerDisplayInterface');
+var PlayerGui = require('./PlayerGui');
 var SimpleSynth = require('./SimpleSynth');
 
 'use strict';
@@ -28,11 +25,11 @@ function beep() {
   o.stop(time + duration);
 }
 
-class WanderingSoundPlayerPerformanceManager extends ClientPerformanceManager {
+class WsPlayerPerformanceManager extends clientSide.PerformanceManager {
   constructor(input, topology) {
     super(input);
 
-    this.__displayInterface = new WanderingSoundPlayerDisplayInterface(topology);
+    this.__displayInterface = new PlayerGui(topology);
 
     this.__label = null;
     this.__place = null;
@@ -135,4 +132,4 @@ class WanderingSoundPlayerPerformanceManager extends ClientPerformanceManager {
 
 }
 
-module.exports = WanderingSoundPlayerPerformanceManager;
+module.exports = WsPlayerPerformanceManager;
