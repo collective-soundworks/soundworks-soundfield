@@ -1,3 +1,4 @@
+var audioContext = require('audio-context');
 var matrixClient = require('matrix/client');
 var ClientPerformanceManager = matrixClient.PerformanceManager;
 var ClientInput = matrixClient.Input;
@@ -69,7 +70,6 @@ class WanderingSoundPlayerPerformanceManager extends ClientPerformanceManager {
 
   serverInstructionsListener() {
     socket.on('update_synth', (soloistId, d, s) => {
-      console.log("update_synth", soloistId, d, s);
       this.__synths[soloistId].update(d, s);
       this.__displayInterface.changeBackgroundColor(d);
     });

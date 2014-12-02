@@ -37,10 +37,11 @@ class WanderingSoundServerPerformanceManager extends ServerPerformanceManager {
   }
 
   touchHandler(type, fingerPosition, timeStamp, socket) {
-    console.log("\""+ type + "\" received from client " + socket.id + " with:\n" +
-      "fingerPosition: { x: " + fingerPosition[0] + ", y: " + fingerPosition[1] + " }\n" +
-      "timeStamp: " + timeStamp
-    );
+    // console.log("\""+ type + "\" received from client " + socket.id + " with:\n" +
+    //   "fingerPosition: { x: " + fingerPosition[0] + ", y: " + fingerPosition[1] + " }\n" +
+    //   "timeStamp: " + timeStamp
+    // );
+
     // Check if socket.id is still among the soloists.
     // Necessary because of network latency: sometimes,
     // the matrix is still on the display of the client,

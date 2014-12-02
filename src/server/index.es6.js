@@ -24,4 +24,4 @@ httpServer.listen(app.get('port'), function () {
   console.log('Server listening on port', app.get('port'));
 });
 
-var wanderingSound = new WanderingSoundServerSetup({ "X": 3, "Y": 2 });
+var setup = new WanderingSoundServerSetup({ "X": 3, "Y": 2 });

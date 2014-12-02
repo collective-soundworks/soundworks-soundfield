@@ -22,22 +22,29 @@ class MvavrgFilter {
   }
 }
 
-class WanderingSoundSynth {
+class SimpleSynth {
   constructor(voiced = false) {
     this.output = audioContext.createGain();
+    this.output.connect(audioContext.destination);
+    this.output.gain.value = 0;
+
     this.filter = audioContext.createBiquadFilter();
+    this.filter.connect(this.output);
+    this.filter.frequency.value = 0;
+    this.filter.Q.value = 24;
+    this.filter.type = 0;
 
     if (voiced) {
-      var osc = audioContext.createOscillator();
+      this.osc = audioContext.createOscillator();
+      this.osc.connect(this.filter);
+      this.osc.type = "square";
+      this.osc.frequency.value = 60;
+      this.osc.start(0);
 
-      osc.type = 2;
-      osc.frequency.value = 80;
-      osc.start(0);
-
-      this.osc = osc;
       this.gain = 1;
     } else {
-      var noise = audioContext.createScriptProcessor(4096, 1, 1);
+      this.osc = audioContext.createScriptProcessor(4096, 1, 1);
+      this.osc.connect(this.filter);
 
       var b0 = 0;
       var b1 = 0;
@@ -47,7 +54,7 @@ class WanderingSoundSynth {
       var b5 = 0;
       var b6 = 0;
 
-      noise.onaudioprocess = function(e) {
+      this.osc.onaudioprocess = function(e) {
         // copied from https://github.com/zacharydenton/noise.js
         var output = e.outputBuffer.getChannelData(0);
         for (var i = 0; i < 4096; i++) {
@@ -67,27 +74,21 @@ class WanderingSoundSynth {
         }
       };
 
-      this.osc = noise;
-      this.gain = 0.25;
+      this.gain = 1;
     }
 
-    this.filter.frequency.value = 400;
-    this.filter.Q.value = 24;
-    this.filter.type = 0;
-
-    this.output.gain.value = 0;
-
-    this.osc.connect(this.filter);
-    this.filter.connect(this.output);
-    this.output.connect(audioContext.destination);
+    this.minCutoff = 200;
+    this.maxCutoff = 8000;
+    this.logCutoffRatio = Math.log(this.maxCutoff / this.minCutoff);
 
     this.speedFilter = new MvavrgFilter(8);
   }
 
   update(distance, speed) {
     var filteredSpeed = this.speedFilter.input(speed);
-    var filterFrequency = this.calculateFrequency(filteredSpeed, 200, 8000);
-    this.filter.frequency.value = filterFrequency;
+    var cutoffFrequency = this.minCutoff * Math.exp(this.logCutoffRatio * filteredSpeed);
+
+    this.filter.frequency.value = cutoffFrequency;
 
     var now = audioContext.currentTime;
     var currentGain = this.output.gain.value;
@@ -100,19 +101,6 @@ class WanderingSoundSynth {
 
     this.output.gain.linearRampToValueAtTime(gain, now + duration);
   }
-
-  /*
-   * Utils methods
-   */
-
-  calculateFrequency(s, fMin, fMax) {
-    if (s < 0.05)
-      return fMin;
-    else if (s > 1)
-      return fMax;
-    return fMin + s * (fMax - fMin);
-  }
-
 }
 
-module.exports = WanderingSoundSynth;
+module.exports = SimpleSynth;
