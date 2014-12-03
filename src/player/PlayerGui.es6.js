@@ -1,5 +1,4 @@
-var matrixClient = require('matrix/client');
-var ClientTopologyDisplayMatrix = matrixClient.TopologyDisplayMatrix;
+var clientSide = require('matrix/client');
 
 window.container = window.container || document.getElementById('container');
 
@@ -11,7 +10,7 @@ class PlayerGui {
 
     this.__topology = topology;
     this.__topologyDiv = this.createTopologyDiv();
-    this.__topologyDisplay = new ClientTopologyDisplayMatrix(this.__topology, this.__topologyDiv);
+    this.__topologyDisplay = new clientSide.TopologyDisplayMatrix(this.__topology, this.__topologyDiv);
   }
 
   addClassToTile(place, className) {

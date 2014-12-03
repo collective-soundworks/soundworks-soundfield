@@ -16,13 +16,13 @@ app.use(express.static(path.join(__dirname, '../../public')));
 
 app.get('/', function(req, res) {
   res.render('player', {
-    title: 'The Matrix'
+    title: 'Wandering Sound'
   });
 });
 
 app.get('/env', function(req, res) {
   res.render('env', {
-    title: 'The Matrix — Environment'
+    title: 'Wandering Sound — Environment'
   });
 });
 
