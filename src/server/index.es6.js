@@ -33,7 +33,7 @@ httpServer.listen(app.get('port'), function() {
 /**
  * setup performance
  */
-var WsServerPerformanceManager = require('./WsServerPerformanceManager');
+var ServerPerform = require('./ServerPerform');
 var topologyManager = new serverSide.TopologyManagerRegularMatrix({"X": 3, "Y": 2});
 
 topologyManager.on('ready', () => {
@@ -42,7 +42,7 @@ topologyManager.on('ready', () => {
   var soloistManager = new serverSide.SoloistManagerRandomUrn(playerManager);
   var placementManager = new serverSide.PlacementManagerAssignedPlaces(topologyManager);
   var preparationManager = new serverSide.PreparationManagerPlacementAndSync(placementManager, null);
-  var performanceManager = new WsServerPerformanceManager(playerManager, topologyManager, soloistManager); // TODO: Revise in generic class.
+  var performanceManager = new ServerPerform(playerManager, topologyManager, soloistManager); // TODO: Revise in generic class.
 
   connectionManager.on('connected', (socket) => {
     topologyManager.sendToClient(socket);

@@ -25,7 +25,7 @@ function beep() {
   o.stop(time + duration);
 }
 
-class WsPlayerPerformanceManager extends clientSide.PerformanceManager {
+class PlayerPerform extends clientSide.PerformanceManager {
   constructor(input, topology) {
     super(input);
 
@@ -132,4 +132,4 @@ class WsPlayerPerformanceManager extends clientSide.PerformanceManager {
 
 }
 
-module.exports = WsPlayerPerformanceManager;
+module.exports = PlayerPerform;

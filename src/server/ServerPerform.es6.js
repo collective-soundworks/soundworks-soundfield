@@ -3,7 +3,7 @@ var ioServer = serverSide.ioServer;
 
 'use strict';
 
-class WsServerPerformanceManager extends serverSide.PerformanceManager {
+class ServerPerform extends serverSide.PerformanceManager {
   constructor(clientManager, topologyManager, soloistManager) {
     super(clientManager, topologyManager);
 
@@ -87,4 +87,4 @@ class WsServerPerformanceManager extends serverSide.PerformanceManager {
   }
 }
 
-module.exports = WsServerPerformanceManager;
+module.exports = ServerPerform;
