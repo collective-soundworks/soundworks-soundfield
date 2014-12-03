@@ -4,8 +4,10 @@ window.container = window.container || document.getElementById('container');
 
 'use strict';
 
-class PlayerGui {
+class PerformanceGui extends clientSide.PerformanceGui {
   constructor(topology) {
+    super();
+    
     this.__informationDiv = this.createInformationDiv();
 
     this.__topology = topology;
@@ -38,7 +40,7 @@ class PlayerGui {
     informationDiv.classList.add('grayed');
     informationDiv.classList.add('hidden');
     
-    container.appendChild(informationDiv);
+    this.__parentDiv.appendChild(informationDiv);
 
     this.__informationDiv = informationDiv;
     
@@ -52,7 +54,7 @@ class PlayerGui {
     topologyDiv.classList.add('topology');
     topologyDiv.classList.add('hidden');
     
-    container.appendChild(topologyDiv);
+    this.__parentDiv.appendChild(topologyDiv);
 
     this.__topologyDiv = topologyDiv;
     
@@ -94,4 +96,4 @@ class PlayerGui {
 
 }
 
-module.exports = PlayerGui;
+module.exports = PerformanceGui;

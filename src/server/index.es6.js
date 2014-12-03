@@ -2,10 +2,13 @@
  * setup server
  */
 var serverSide = require('matrix/server');
-var http = require('http');
 var express = require('express');
-var path = require('path');
 var app = express();
+
+// serverSide.setupServer(app);
+
+var http = require('http');
+var path = require('path');
 var httpServer = http.createServer(app);
 
 serverSide.ioServer.init(httpServer);
@@ -34,41 +37,45 @@ httpServer.listen(app.get('port'), function() {
  * setup performance
  */
 var ServerPerform = require('./ServerPerform');
-var topologyManager = new serverSide.TopologyManagerRegularMatrix({"X": 3, "Y": 2});
+var topologyManager = new serverSide.TopologyManagerRegularMatrix({
+  "X": 3,
+  "Y": 2
+});
 
-topologyManager.on('ready', () => {
-  var playerManager = new serverSide.PlayerManager();
+topologyManager.on('topology_ready', () => {
   var connectionManager = new serverSide.ConnectionManager();
+  var playerManager = new serverSide.PlayerManager();
   var soloistManager = new serverSide.SoloistManagerRandomUrn(playerManager);
   var placementManager = new serverSide.PlacementManagerAssignedPlaces(topologyManager);
-  var preparationManager = new serverSide.PreparationManagerPlacementAndSync(placementManager, null);
+  var syncManager = new serverSide.SyncManager();
+  var setupManager = new serverSide.SetupManagerPlacementAndSync(placementManager, syncManager);
   var performanceManager = new ServerPerform(playerManager, topologyManager, soloistManager); // TODO: Revise in generic class.
 
+  // serverSide.createScenario(setupManager, performanceManager);
+
   connectionManager.on('connected', (socket) => {
-    topologyManager.sendToClient(socket);
-    playerManager.connect(socket);
+    topologyManager.send(socket);
+    playerManager.register(socket);
   });
 
   connectionManager.on('disconnected', (socket) => {
-    playerManager.disconnect(socket);
+    playerManager.unregister(socket);
   });
 
-  playerManager.on('connected', (client) => {
-    placementManager.requestPlace(client);
+  playerManager.on('player_registered', (player) => {
+    setupManager.addPlayer(player);
   });
 
-  playerManager.on('disconnected', (client) => {
-    performanceManager.removeParticipant(client);
-    soloistManager.removePlayer(client);
-    placementManager.releasePlace(client);
+  playerManager.on('player_unregistered', (player) => {
+    performanceManager.removePlayer(player);
+    setupManager.removePlayer(player);
   });
 
-  preparationManager.on('ready', (client) => {
-    playerManager.clientReady(client);
+  setupManager.on('setup_ready', (player) => {
+    playerManager.playerReady(player);
   });
 
-  playerManager.on('playing', (client) => {
-    performanceManager.addParticipant(client);
-    soloistManager.addPlayer(client);
+  playerManager.on('player_ready', (player) => {
+    performanceManager.addPlayer(player);
   });
 });

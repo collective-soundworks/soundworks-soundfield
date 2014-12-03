@@ -1,16 +1,20 @@
 var clientSide = require('matrix/client');
 var PlayerPerform = require('./PlayerPerform');
 
-window.socket = window.socket || io('/play'); // TODO: make a module
+var ioClient = clientSide.ioClient;
+ioClient.init('/play');
 
 window.addEventListener('load', () => {
+  var socket = ioClient.socket;
 
   socket.on('topology', (topology) => {
     var input = new clientSide.Input();
-    var preparationManager = new clientSide.PlacementManagerAssignedPlaces();
+    var setupManager = new clientSide.SetupManagerPlacementAndSync();
     var performanceManager = new PlayerPerform(input, topology);
 
-    preparationManager.on('ready', (placeInfo) => {
+    setupManager.start();
+
+    setupManager.on('setup_ready', (placeInfo) => {
       performanceManager.start(placeInfo);
     });
   });
