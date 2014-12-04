@@ -8,9 +8,11 @@ window.addEventListener('load', () => {
   var socket = ioClient.socket;
 
   socket.on('topology', (topology) => {
-    var input = new clientSide.Input();
-    var setupManager = new clientSide.SetupManagerPlacementAndSync();
-    var performanceManager = new PlayerPerform(input, topology);
+    var inputManager = new clientSide.InputManager();
+    var syncManager = new clientSide.SyncManager();
+    var placementManager = new clientSide.PlacementManagerAssignedPlaces();
+    var setupManager = new clientSide.SetupManagerPlacementAndSync(placementManager, syncManager);
+    var performanceManager = new PlayerPerform(inputManager, topology);
 
     setupManager.start();
 

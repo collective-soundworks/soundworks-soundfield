@@ -2,6 +2,7 @@ var clientSide = require('matrix/client');
 var audioContext = require('audio-context');
 var PerformanceGui = require('./PerformanceGui');
 var SimpleSynth = require('./SimpleSynth');
+var ioClient = clientSide.ioClient;
 
 'use strict';
 
@@ -45,6 +46,8 @@ class PlayerPerform extends clientSide.PerformanceManager {
   }
 
   clientManagementListener() {
+    var socket = ioClient.socket;
+
     socket.on('new_player', (player) => {
       this.__performanceGui.addPlayer(player);
     });
@@ -66,6 +69,8 @@ class PlayerPerform extends clientSide.PerformanceManager {
   }
 
   serverInstructionsListener() {
+    var socket = ioClient.socket;
+
     socket.on('update_synth', (soloistId, d, s) => {
       this.__synths[soloistId].update(d, s);
       this.__performanceGui.changeBackgroundColor(d);
@@ -73,6 +78,8 @@ class PlayerPerform extends clientSide.PerformanceManager {
   }
 
   soloistManagerListener() {
+    var socket = ioClient.socket;
+
     socket.on('current_soloists', (soloists) => {
       for (let i = 0; i < soloists.length; i++) {
         // this.__performanceGui.addSoloist(soloists[i]);
@@ -90,7 +97,7 @@ class PlayerPerform extends clientSide.PerformanceManager {
     });
 
     socket.on('remove_soloist', (soloist) => {
-      var soloistId = soloist.userData.soloistId;
+      var soloistId = soloist.state.soloistId;
       // this.__performanceGui.removeSoloist(soloist);
       this.__synths[soloistId].update(1, 0);
       this.__performanceGui.changeBackgroundColor(1);
@@ -111,6 +118,8 @@ class PlayerPerform extends clientSide.PerformanceManager {
   }
 
   topologyListener() {
+    var socket = ioClient.socket;
+
     socket.on('current_state', (currentState) => {
       for(let i = 0; i < currentState.length; i++) {
         let player = currentState[i];
@@ -120,10 +129,12 @@ class PlayerPerform extends clientSide.PerformanceManager {
   }
 
   touchHandler(touchData) {
+    var socket = ioClient.socket;
     var fingerPosition = [
       (touchData.coordinates[0] - this.__performanceGui.__topologyDiv.offsetLeft + window.scrollX) / this.__performanceGui.__topologyDiv.offsetWidth,
       (touchData.coordinates[1] - this.__performanceGui.__topologyDiv.offsetTop + window.scrollY) / this.__performanceGui.__topologyDiv.offsetHeight
     ];
+
     socket.emit(touchData.event, fingerPosition, touchData.currentTime); // TODO: might be a good idea to send the time in sever clock. (Requires sync module.)
   }
 
