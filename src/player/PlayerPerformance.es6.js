@@ -35,9 +35,8 @@ class PlayerPerformance extends clientSide.PerformanceManager {
   constructor(topologyManager) {
     super(topologyManager);
 
-    this.label = null;
     this.place = null;
-    this.position = null;
+    this.label = null;
 
     this.synths = [new SimpleSynth(false), new SimpleSynth(true)];
 
