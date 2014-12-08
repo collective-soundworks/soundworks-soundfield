@@ -70,7 +70,7 @@ class ServerPerformance extends serverSide.PerformanceManager {
 
         case 'touchend':
           io.of('/play').in('performance').emit('perf_control', soloistId, 1, s);
-          io.of('/room').emit('perf_control', soloistId, fingerPosition, 1, s);
+          io.of('/env').emit('perf_control', soloistId, fingerPosition, 1, s);
           break;
 
         case 'touchmove':
@@ -85,7 +85,7 @@ class ServerPerformance extends serverSide.PerformanceManager {
             this.playerManager.playing[i].socket.emit('perf_control', soloistId, d, s);
             if (dSub > d) dSub = d; // subwoofer distance calculation
           }
-          io.of('/room').emit('perf_control', soloistId, fingerPosition, dSub, s);
+          io.of('/env').emit('perf_control', soloistId, fingerPosition, dSub, s);
           break;
 
         case 'touchstart':
@@ -98,7 +98,7 @@ class ServerPerformance extends serverSide.PerformanceManager {
             this.playerManager.playing[i].socket.emit('perf_control', soloistId, d, 0);
             if (dSub > d) dSub = d; // subwoofer distance calculation
           }
-          io.of('/room').emit('perf_control', soloistId, fingerPosition, dSub, s);
+          io.of('/env').emit('perf_control', soloistId, fingerPosition, dSub, s);
           break;
 
       }
