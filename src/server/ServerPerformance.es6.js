@@ -1,7 +1,7 @@
+'use strict';
+
 var serverSide = require('matrix/server');
 var ioServer = serverSide.ioServer;
-
-'use strict';
 
 function calculateNormalizedDistance(a, b, h, w) {
   if (w / h < 1)
@@ -20,8 +20,9 @@ function scaleDistance(d, m) {
 
 class ServerPerformance extends serverSide.PerformanceManager {
   constructor(topologyManager) {
-    super(topologyManager);
+    super();
 
+    this.topologyManager = topologyManager;
     this.soloistManager  = new serverSide.SoloistManagerRandomUrn();
     this.fingerRadius = 0.3;
   }
