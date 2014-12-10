@@ -58,7 +58,7 @@ class PlayerPerformance extends clientSide.PerformanceManager {
     this.soloistManagerListener();
   }
 
-  setPlayers(playerList) {
+  initPlayers(playerList) {
     //TODO: clear players
     for (let i = 0; i < playerList.length; i++)
       this.topologyManager.addClassToTile(playerList[i].place, 'player');
