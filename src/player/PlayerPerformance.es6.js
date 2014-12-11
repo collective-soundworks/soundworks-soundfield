@@ -1,10 +1,10 @@
+'use strict';
+
 var clientSide = require('matrix/client');
 var audioContext = require('audio-context');
 var SimpleSynth = require('./SimpleSynth');
 var ioClient = clientSide.ioClient;
 var inputModule = clientSide.inputModule;
-
-'use strict';
 
 function beep() {
   var time = audioContext.currentTime;
@@ -33,13 +33,10 @@ function changeBackgroundColor(d) {
 
 class PlayerPerformance extends clientSide.PerformanceManager {
   constructor(topologyManager) {
-    super(topologyManager);
+    super();
 
-    this.label = null;
-    this.place = null;
-    this.position = null;
-
-    this.synths = [new SimpleSynth(false), new SimpleSynth(true)];
+    this.topologyManager = topologyManager;
+    this.synths = [ new SimpleSynth(false), new SimpleSynth(true) ];
 
     // setup GUI
     var informationDiv = document.createElement('div');
@@ -61,7 +58,7 @@ class PlayerPerformance extends clientSide.PerformanceManager {
     this.soloistManagerListener();
   }
 
-  setPlayers(playerList) {
+  initPlayers(playerList) {
     //TODO: clear players
     for (let i = 0; i < playerList.length; i++)
       this.topologyManager.addClassToTile(playerList[i].place, 'player');

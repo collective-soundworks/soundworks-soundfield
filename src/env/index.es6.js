@@ -1,5 +1,6 @@
 var ioClient = clientSide.ioClient;
-ioClient.init('/env');
+
+clientSide.ioClient.init('/env');
 
 window.addEventListener('load', () => {
   var socket = ioClient.socket;
