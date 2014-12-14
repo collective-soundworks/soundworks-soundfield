@@ -159,7 +159,7 @@ class PlayerPerformance extends clientSide.PerformanceSoloists {
     var x = (touchData.coordinates[0] - this.topologyDiv.offsetLeft + window.scrollX) / this.topologyDiv.offsetWidth;
     var y = (touchData.coordinates[1] - this.topologyDiv.offsetTop + window.scrollY) / this.topologyDiv.offsetHeight;
 
-    socket.emit(touchData.event, [x, y], touchData.currentTime); // TODO: might be a good idea to send the time in sever clock. (Requires sync module.)
+    socket.emit(touchData.event, [x, y], touchData.timestamp); // TODO: might be a good idea to send the time in sever clock. (Requires sync module.)
   }
 }
 
