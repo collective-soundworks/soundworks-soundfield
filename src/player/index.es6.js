@@ -2,15 +2,18 @@
 
 var clientSide = require('matrix/client');
 var PlayerPerformance = require('./PlayerPerformance');
+var ioClient = clientSide.ioClient;
 
-clientSide.ioClient.init('/play');
+ioClient.init('/play');
 
 window.addEventListener('load', () => {
-  var topologyManager = new clientSide.TopologyManagerGeneric({display: true});
-  var placementManager = new clientSide.PlacementManagerAssignedPlaces({dialog: true});
-  var syncManager = new clientSide.SyncManager();
-  var setupManager = new clientSide.SetupManagerPlacementAndSync(placementManager, syncManager);
-  var performanceManager = new PlayerPerformance(topologyManager);
+  var topology = new clientSide.TopologyGeneric();
+  var sync = new clientSide.SetupSync();
+  var placement = new clientSide.SetupPlacementAssigned();
+  var performance = new PlayerPerformance(topology, placement);
+  var manager = new clientSide.Manager([sync, placement], performance, topology);
 
-  clientSide.start(setupManager, performanceManager, topologyManager);
+  ioClient.start(() => {
+    manager.start();
+  });
 });

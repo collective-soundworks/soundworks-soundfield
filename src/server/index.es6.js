@@ -25,11 +25,10 @@ app.get('/env', function(req, res) {
 // init socket io server
 serverSide.ioServer.init(app);
 
-// create manangers and start server side
-var topologyManager = new serverSide.TopologyManagerRegularMatrix({cols: 3, rows: 2});
-var placementManager = new serverSide.PlacementManagerAssignedPlaces({topology: topologyManager, order: 'random'});
-var syncManager = new serverSide.SyncManager();
-var setupManager = new serverSide.SetupManagerPlacementAndSync(placementManager, syncManager);
-var performanceManager = new ServerPerformance(topologyManager);
+// start server side
+var topology = new serverSide.TopologyMatrix({cols: 3, rows: 2});
+var sync = new serverSide.SetupSync({iterations: 10});
+var placement = new serverSide.SetupPlacementAssigned({topology: topology, order: 'random'});
+var performance = new ServerPerformance(topology);
+var manager = new serverSide.ManagerPlayers([sync, placement], performance, topology);
 
-serverSide.start(setupManager, performanceManager, topologyManager);

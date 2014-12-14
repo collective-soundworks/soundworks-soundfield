@@ -18,68 +18,61 @@ function scaleDistance(d, m) {
   return Math.min(d / m, 1);
 }
 
-class ServerPerformance extends serverSide.PerformanceManager {
-  constructor(topologyManager) {
-    super();
+class ServerPerformance extends serverSide.PerformanceSoloists {
+  constructor(topology, params = {}) {
+    super(params);
 
-    this.topologyManager = topologyManager;
-    this.soloistManager  = new serverSide.SoloistManagerRandomUrn();
+    this.__topology = topology;
     this.fingerRadius = 0.3;
   }
 
-  init(playerManager) {
-    super.init(playerManager);
-    this.soloistManager.init(playerManager);
+  connect(socket, player) {
+    super.connect(socket, player);
+    this.__inputListener(player.socket);
   }
 
-  addPlayer(player) {
-    this.inputListener(player.socket);
-    this.soloistManager.addPlayer(player);
+  // disconnect(socket, player) {
+  //   super.disconnect(player);
+  // }
+
+  __inputListener(socket) {
+    socket.on('touchstart', (fingerPosition, timeStamp) => this.__touchHandler('touchstart', fingerPosition, timeStamp, socket));
+    socket.on('touchmove', (fingerPosition, timeStamp) => this.__touchHandler('touchmove', fingerPosition, timeStamp, socket));
+    socket.on('touchend', (fingerPosition, timeStamp) => this.__touchHandler('touchend', fingerPosition, timeStamp, socket));
   }
 
-  inputListener(socket) {
-    socket.on('touchstart', (fingerPosition, timeStamp) => this.touchHandler('touchstart', fingerPosition, timeStamp, socket));
-    socket.on('touchmove', (fingerPosition, timeStamp) => this.touchHandler('touchmove', fingerPosition, timeStamp, socket));
-    socket.on('touchend', (fingerPosition, timeStamp) => this.touchHandler('touchend', fingerPosition, timeStamp, socket));
-  }
-
-  removePlayer(player) {
-    this.soloistManager.removePlayer(player);
-  }
-
-  touchHandler(type, fingerPosition, timeStamp, socket) {
+  __touchHandler(type, fingerPosition, timeStamp, socket) {
     // console.log("\""+ type + "\" received from player " + socket.id + " with:\n" +
     //   "fingerPosition: { x: " + fingerPosition[0] + ", y: " + fingerPosition[1] + " }\n" +
     //   "timeStamp: " + timeStamp
     // );
-    var h = this.topologyManager.height;
-    var w = this.topologyManager.width;
+    var h = this.__topology.height;
+    var w = this.__topology.width;
 
     // Check if socket.id is still among the soloists.
     // Necessary because of network latency: sometimes,
     // the matrix is still on the display of the player,
     // he is no longer a performer on the server.)
-    var index = this.soloistManager.soloists.map((s) => s.socket.id).indexOf(socket.id);
+    var index = this.soloists.map((s) => s.socket.id).indexOf(socket.id);
     
     if (index > -1) {
       let io = ioServer.io;
-      let player = this.playerManager.sockets[socket.id];
+      let player = this.__manager.sockets[socket.id];
       let soloistId = player.publicState.soloistId;
       let dSub = 1;
       let s = 0;
 
       switch (type) {
-
         case 'touchstart':
           player.privateState.inputArray = [{
             position: fingerPosition,
             timeStamp: timeStamp
           }];
 
-          for (let i = 0; i < this.playerManager.playing.length; i++) {
-            let anyPlayer = this.playerManager.playing[i];
+          for (let i = 0; i < this.__manager.playing.length; i++) {
+            let anyPlayer = this.__manager.playing[i];
             let place = anyPlayer.place;
-            let position = this.topologyManager.positions[place];
+            let position = this.__topology.positions[place];
             let d = scaleDistance(calculateNormalizedDistance(position, fingerPosition, h, w), this.fingerRadius);
 
             anyPlayer.socket.emit('perf_control', soloistId, d, 0);
@@ -101,10 +94,10 @@ class ServerPerformance extends serverSide.PerformanceManager {
 
           s = calculateVelocity(inputArray[inputArray.length - 1], inputArray[inputArray.length - 2], h, w);
           s = Math.min(1, s / 2); // TODO: have a better way to set the threshold
-          for (let i = 0; i < this.playerManager.playing.length; i++) {
-            let anyPlayer = this.playerManager.playing[i];
+          for (let i = 0; i < this.__manager.playing.length; i++) {
+            let anyPlayer = this.__manager.playing[i];
             let place = anyPlayer.place;
-            let position = this.topologyManager.positions[place];
+            let position = this.__topology.positions[place];
             let d = scaleDistance(calculateNormalizedDistance(position, fingerPosition, h, w), this.fingerRadius);
 
             anyPlayer.socket.emit('perf_control', soloistId, d, s);
@@ -117,7 +110,7 @@ class ServerPerformance extends serverSide.PerformanceManager {
           break;
 
         case 'touchend':
-          io.of('/play').in('performance').emit('perf_control', soloistId, 1, s);
+          io.of('/play').in('performing').emit('perf_control', soloistId, 1, s);
           io.of('/env').emit('perf_control', soloistId, fingerPosition, 1, s);
           break;
       }

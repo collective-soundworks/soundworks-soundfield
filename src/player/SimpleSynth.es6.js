@@ -1,6 +1,6 @@
-var audioContext = require('audio-context');
-
 'use strict';
+
+var audioContext = require('audio-context');
 
 class MvavrgFilter {
   constructor(size) {
