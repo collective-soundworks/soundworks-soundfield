@@ -26,11 +26,6 @@ function beep() {
   o.stop(time + duration);
 }
 
-function changeBackgroundColor(d) {
-  var value = Math.floor(Math.max(1 - d, 0) * 255);
-  document.body.style.backgroundColor = 'rgb(' + value + ', ' + value + ', ' + value + ')';
-}
-
 class PlayerPerformance extends clientSide.PerformanceSoloists {
   constructor(topology, placement, params = {}) {
     super(params);
@@ -39,18 +34,16 @@ class PlayerPerformance extends clientSide.PerformanceSoloists {
     this.placement = placement;
     this.synths = [new SimpleSynth(false), new SimpleSynth(true)];
 
-    // setup GUI
-    var informationDiv = document.createElement('div');
-    informationDiv.setAttribute('id', 'information');
-    informationDiv.classList.add('info');
-    informationDiv.classList.add('grayed');
-    this.informationDiv = informationDiv;
+    // place info display
+    var infoDiv = document.createElement('div');
+    infoDiv.setAttribute('id', 'info');
+    infoDiv.classList.add('info');
+    this.infoDiv = infoDiv;
+    this.displayDiv.appendChild(this.infoDiv);
 
-    var topologyDiv = topology.displayDiv;
-    this.topologyDiv = topologyDiv;
-
-    this.displayDiv.appendChild(informationDiv);
-    this.displayDiv.appendChild(topologyDiv);
+    // topology display
+    this.topologyDiv = this.topology.displayDiv;
+    this.displayDiv.appendChild(this.topologyDiv);
 
     // setup liteners
     this.__inputListener();
@@ -78,7 +71,7 @@ class PlayerPerformance extends clientSide.PerformanceSoloists {
 
     if (soloistId) {
       this.synths[soloistId].update(1, 0);
-      changeBackgroundColor(1);
+      this.__changeBackgroundColor(1);
     }
 
     super.removePlayer(player);
@@ -101,7 +94,7 @@ class PlayerPerformance extends clientSide.PerformanceSoloists {
     if (soloist.socketId === socket.io.engine.id) {
       inputModule.enableTouch(this.topologyDiv);
 
-      this.informationDiv.classList.add('hidden');
+      this.infoDiv.classList.add('hidden');
       this.topologyDiv.classList.remove('hidden');
 
       beep();
@@ -114,7 +107,7 @@ class PlayerPerformance extends clientSide.PerformanceSoloists {
     // this.topology.displayPlayer(soloist.place, false, 'soloist');
 
     this.synths[soloistId].update(1, 0);
-    changeBackgroundColor(1);
+    this.__changeBackgroundColor(1);
 
     var socket = ioClient.socket;
 
@@ -122,21 +115,25 @@ class PlayerPerformance extends clientSide.PerformanceSoloists {
       inputModule.disableTouch(this.topologyDiv);
 
       this.topologyDiv.classList.add('hidden');
-      this.informationDiv.classList.remove('hidden');
+      this.infoDiv.classList.remove('hidden');
     }
 
     super.removeSoloist(soloist);
   }
 
   start() {
-    var place = this.placement.place;
-    var label = this.placement.label;
+    if (this.displayDiv) {
+      this.infoDiv.innerHTML = "<p class='small'>You are at position</p>" + "<div class='position'><span>" + this.placement.label + "</span></div>";
+      this.infoDiv.classList.remove('hidden');
+    }
 
-    this.topology.displayPlayer(place, true, 'me');
+    this.topology.displayPlayer(this.placement.place, true, 'me');
+    super.start();
+  }
 
-    this.informationDiv.innerHTML = "<p class='small'>You are at position</p>" + "<div class='position'><span>" + label + "</span></div>";
-    this.informationDiv.classList.remove('hidden');
-    this.displayDiv.classList.remove('hidden');
+  __changeBackgroundColor(d) {
+    var value = Math.floor(Math.max(1 - d, 0) * 255);
+    this.displayDiv.style.backgroundColor = 'rgb(' + value + ', ' + value + ', ' + value + ')';
   }
 
   __inputListener() {
@@ -150,7 +147,7 @@ class PlayerPerformance extends clientSide.PerformanceSoloists {
 
     socket.on('perf_control', (soloistId, d, s) => {
       this.synths[soloistId].update(d, s);
-      changeBackgroundColor(d);
+      this.__changeBackgroundColor(d);
     });
   }
 
