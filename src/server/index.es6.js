@@ -32,3 +32,5 @@ var placement = new serverSide.SetupPlacementAssigned({topology: topology, order
 var performance = new ServerPerformance(topology);
 var manager = new serverSide.ManagerPlayers([sync, placement], performance, topology);
 
+if (topology)
+  topology.init();
