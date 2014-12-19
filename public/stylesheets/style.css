@@ -40,11 +40,12 @@ body {
 
 .welcome {
   background: #000;
-  position: fixed;
-  min-height: 100%;
-  min-width: 100%;
+  position: relative;
+  margin: 0 auto;
+  line-height: 1.2;
+  height: 100%;
+  width: 90%;
   font-size: 5em;
-  padding: 1em;
   text-align: center;
 }
 
@@ -54,11 +55,12 @@ p {
 
 .setup {
   background: #000;
-  position: fixed;
-  min-height: 100%;
-  min-width: 100%;
+  position: relative;
+  margin: 0 auto;
+  line-height: 1.2;
+  height: 100%;
+  width: 90%;
   font-size: 5em;
-  padding: 1em;
   text-align: center;
 }
 
@@ -86,7 +88,6 @@ p {
   min-height: 100%;
   min-width: 100%;
   font-size: 5em;
-  padding: 1em;
   text-align: center;
   color: #333;
 }

@@ -22,7 +22,7 @@ class ServerPerformance extends serverSide.PerformanceSoloists {
   constructor(topology, params = {}) {
     super(params);
 
-    this.__topology = topology;
+    this.topology = topology;
     this.fingerRadius = 0.3;
   }
 
@@ -46,8 +46,8 @@ class ServerPerformance extends serverSide.PerformanceSoloists {
     //   "fingerPosition: { x: " + fingerPosition[0] + ", y: " + fingerPosition[1] + " }\n" +
     //   "timeStamp: " + timeStamp
     // );
-    var h = this.__topology.height;
-    var w = this.__topology.width;
+    var h = this.topology.height;
+    var w = this.topology.width;
 
     // Check if socket.id is still among the soloists.
     // Necessary because of network latency: sometimes,
@@ -57,7 +57,7 @@ class ServerPerformance extends serverSide.PerformanceSoloists {
     
     if (index > -1) {
       let io = ioServer.io;
-      let player = this.__manager.sockets[socket.id];
+      let player = this.managers['/play'].sockets[socket.id];
       let soloistId = player.publicState.soloistId;
       let dSub = 1;
       let s = 0;
@@ -69,10 +69,10 @@ class ServerPerformance extends serverSide.PerformanceSoloists {
             timeStamp: timeStamp
           }];
 
-          for (let i = 0; i < this.__manager.playing.length; i++) {
-            let anyPlayer = this.__manager.playing[i];
+          for (let i = 0; i < this.managers['/play'].playing.length; i++) {
+            let anyPlayer = this.managers['/play'].playing[i];
             let place = anyPlayer.place;
-            let position = this.__topology.positions[place];
+            let position = this.topology.positions[place];
             let d = scaleDistance(calculateNormalizedDistance(position, fingerPosition, h, w), this.fingerRadius);
 
             anyPlayer.socket.emit('perf_control', soloistId, d, 0);
@@ -94,10 +94,10 @@ class ServerPerformance extends serverSide.PerformanceSoloists {
 
           s = calculateVelocity(inputArray[inputArray.length - 1], inputArray[inputArray.length - 2], h, w);
           s = Math.min(1, s / 2); // TODO: have a better way to set the threshold
-          for (let i = 0; i < this.__manager.playing.length; i++) {
-            let anyPlayer = this.__manager.playing[i];
+          for (let i = 0; i < this.managers['/play'].playing.length; i++) {
+            let anyPlayer = this.managers['/play'].playing[i];
             let place = anyPlayer.place;
-            let position = this.__topology.positions[place];
+            let position = this.topology.positions[place];
             let d = scaleDistance(calculateNormalizedDistance(position, fingerPosition, h, w), this.fingerRadius);
 
             anyPlayer.socket.emit('perf_control', soloistId, d, s);

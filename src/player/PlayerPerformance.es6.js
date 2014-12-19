@@ -107,7 +107,7 @@ class PlayerPerformance extends clientSide.PerformanceSoloists {
     // this.topology.displayPlayer(soloist.place, false, 'soloist');
 
     this.synths[soloistId].update(1, 0);
-    this.__changeBackgroundColor(1);
+    this.__changeBackgroundColor(1); // TODO: incorrect
 
     var socket = ioClient.socket;
 
