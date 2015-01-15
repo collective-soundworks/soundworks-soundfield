@@ -62,6 +62,8 @@ class ServerPerformance extends serverSide.PerformanceSoloists {
       let dSub = 1;
       let s = 0;
 
+      var players = this.managers['/play'].playing;
+
       switch (type) {
         case 'touchstart':
           player.privateState.inputArray = [{
@@ -69,8 +71,8 @@ class ServerPerformance extends serverSide.PerformanceSoloists {
             timeStamp: timeStamp
           }];
 
-          for (let i = 0; i < this.managers['/play'].playing.length; i++) {
-            let anyPlayer = this.managers['/play'].playing[i];
+          for (let i = 0; i < players.length; i++) {
+            let anyPlayer = players[i];
             let place = anyPlayer.place;
             let position = this.topology.positions[place];
             let d = scaleDistance(calculateNormalizedDistance(position, fingerPosition, h, w), this.fingerRadius);
@@ -94,8 +96,8 @@ class ServerPerformance extends serverSide.PerformanceSoloists {
 
           s = calculateVelocity(inputArray[inputArray.length - 1], inputArray[inputArray.length - 2], h, w);
           s = Math.min(1, s / 2); // TODO: have a better way to set the threshold
-          for (let i = 0; i < this.managers['/play'].playing.length; i++) {
-            let anyPlayer = this.managers['/play'].playing[i];
+          for (let i = 0; i < players.length; i++) {
+            let anyPlayer = players[i];
             let place = anyPlayer.place;
             let position = this.topology.positions[place];
             let d = scaleDistance(calculateNormalizedDistance(position, fingerPosition, h, w), this.fingerRadius);
