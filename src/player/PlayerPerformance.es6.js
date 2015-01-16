@@ -1,6 +1,6 @@
 'use strict';
 
-var clientSide = require('matrix/client');
+var clientSide = require('soundworks/client');
 var audioContext = require('audio-context');
 var SimpleSynth = require('./SimpleSynth');
 var ioClient = clientSide.ioClient;

@@ -1,6 +1,6 @@
 'use strict';
 
-var clientSide = require('matrix/client');
+var clientSide = require('soundworks/client');
 var PlayerPerformance = require('./PlayerPerformance');
 var ioClient = clientSide.ioClient;
 

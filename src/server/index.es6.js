@@ -1,6 +1,6 @@
 'use strict';
 
-var serverSide = require('matrix/server');
+var serverSide = require('soundworks/server');
 var ServerPerformance = require('./ServerPerformance');
 var path = require('path');
 var express = require('express');

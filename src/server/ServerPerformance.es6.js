@@ -1,6 +1,6 @@
 'use strict';
 
-var serverSide = require('matrix/server');
+var serverSide = require('soundworks/server');
 var ioServer = serverSide.ioServer;
 
 function calculateNormalizedDistance(a, b, h, w) {
