@@ -48,24 +48,45 @@ class PlayerPerformance extends clientSide.PerformanceSoloists {
     // setup liteners
     this.__inputListener();
     this.__performanceControlListener();
+
+    var socket = ioClient.socket;
+
+    socket.on('players_init', (playerList) => {
+      this.initPlayers(playerList);
+    });
+
+    socket.on('player_add', (player) => {
+      this.addPlayer(player);
+    });
+
+    socket.on('player_remove', (player) => {
+      this.removePlayer(player);
+    });
+
+    socket.on('soloists_init', (soloistList) => {
+      this.initSoloists(soloistList);
+    });
+
+    socket.on('soloist_add', (soloist) => {
+      this.addSoloist(soloist);
+    });
+
+    socket.on('soloist_remove', (soloist) => {
+      this.removeSoloist(soloist);
+    });
   }
 
   initPlayers(playerList) {
-    super.initPlayers(playerList);
-
     for (let i = 0; i < playerList.length; i++)
-      this.topology.displayPlayer(playerList[i].place, true);
+      this.topology.displayPlayer(playerList[i].index, true);
   }
 
   addPlayer(player) {
-    super.addPlayer(player);
-    this.topology.displayPlayer(player.place, true);
+    this.topology.displayPlayer(player.index, true);
   }
 
   removePlayer(player) {
-    super.removePlayer(player);
-
-    this.topology.displayPlayer(player.place, false);
+    this.topology.displayPlayer(player.index, false);
 
     var soloistId = player.state.soloistId;
 
@@ -73,21 +94,15 @@ class PlayerPerformance extends clientSide.PerformanceSoloists {
       this.synths[soloistId].update(1, 0);
       this.__changeBackgroundColor(1);
     }
-
-    super.removePlayer(player);
   }
 
   initSoloists(soloistList) {
-    super.initSoloists(soloistList);
-
     // for (let i = 0; i < soloistList.length; i++)
-    //   this.topology.displayPlayer(soloistList[i].place, true, 'soloist');
+    //   this.topology.displayPlayer(soloistList[i].index, true, 'soloist');
   }
 
   addSoloist(soloist) {
-    super.addSoloist(soloist);
-
-    // this.topology.displayPlayer(soloist.place, true, 'soloist');
+    // this.topology.displayPlayer(soloist.index, true, 'soloist');
 
     var socket = ioClient.socket;
 
@@ -104,7 +119,7 @@ class PlayerPerformance extends clientSide.PerformanceSoloists {
   removeSoloist(soloist) {
     var soloistId = soloist.state.soloistId;
 
-    // this.topology.displayPlayer(soloist.place, false, 'soloist');
+    // this.topology.displayPlayer(soloist.index, false, 'soloist');
 
     this.synths[soloistId].update(1, 0);
     this.__changeBackgroundColor(1); // TODO: incorrect
@@ -117,8 +132,6 @@ class PlayerPerformance extends clientSide.PerformanceSoloists {
       this.topologyDiv.classList.add('hidden');
       this.infoDiv.classList.remove('hidden');
     }
-
-    super.removeSoloist(soloist);
   }
 
   start() {
