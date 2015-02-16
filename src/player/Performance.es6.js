@@ -1,10 +1,10 @@
 'use strict';
 
 var clientSide = require('soundworks/client');
+var client = clientSide.client;
+var input = clientSide.input;
 var audioContext = require('audio-context');
 var SimpleSynth = require('./SimpleSynth');
-var ioClient = clientSide.ioClient;
-var inputModule = clientSide.inputModule;
 
 function beep() {
   var time = audioContext.currentTime;
@@ -26,7 +26,7 @@ function beep() {
   o.stop(time + duration);
 }
 
-class PlayerPerformance extends clientSide.PerformanceSoloists {
+class Performance extends clientSide.Module {
   constructor(topology, placement, params = {}) {
     super(params);
 
@@ -37,56 +37,61 @@ class PlayerPerformance extends clientSide.PerformanceSoloists {
     // place info display
     var infoDiv = document.createElement('div');
     infoDiv.setAttribute('id', 'info');
+    infoDiv.classList.add('centered-content');
     infoDiv.classList.add('info');
+
     this.infoDiv = infoDiv;
     this.displayDiv.appendChild(this.infoDiv);
 
     // topology display
-    this.topologyDiv = this.topology.displayDiv;
+    var topologyDiv = document.createElement('div');
+    topologyDiv.setAttribute('id', 'topology');
+
+    this.topologyDiv = topologyDiv;
     this.displayDiv.appendChild(this.topologyDiv);
 
     // setup liteners
     this.__inputListener();
     this.__performanceControlListener();
 
-    var socket = ioClient.socket;
+    var socket = client.socket;
 
     socket.on('players_init', (playerList) => {
-      this.initPlayers(playerList);
+      this.__initPlayers(playerList);
     });
 
     socket.on('player_add', (player) => {
-      this.addPlayer(player);
+      this.__addPlayer(player);
     });
 
     socket.on('player_remove', (player) => {
-      this.removePlayer(player);
+      this.__removePlayer(player);
     });
 
     socket.on('soloists_init', (soloistList) => {
-      this.initSoloists(soloistList);
+      this.__initSoloists(soloistList);
     });
 
     socket.on('soloist_add', (soloist) => {
-      this.addSoloist(soloist);
+      this.__addSoloist(soloist);
     });
 
     socket.on('soloist_remove', (soloist) => {
-      this.removeSoloist(soloist);
+      this.__removeSoloist(soloist);
     });
   }
 
-  initPlayers(playerList) {
+  __initPlayers(playerList) {
     for (let i = 0; i < playerList.length; i++)
-      this.topology.displayPlayer(playerList[i].index, true);
+      this.topology.changeTileClass(this.topologyDiv, playerList[i].index, true);
   }
 
-  addPlayer(player) {
-    this.topology.displayPlayer(player.index, true);
+  __addPlayer(player) {
+    this.topology.changeTileClass(this.topologyDiv, player.index, true);
   }
 
-  removePlayer(player) {
-    this.topology.displayPlayer(player.index, false);
+  __removePlayer(player) {
+    this.topology.changeTileClass(this.topologyDiv, player.index, false);
 
     var soloistId = player.state.soloistId;
 
@@ -96,18 +101,18 @@ class PlayerPerformance extends clientSide.PerformanceSoloists {
     }
   }
 
-  initSoloists(soloistList) {
+  __initSoloists(soloistList) {
     // for (let i = 0; i < soloistList.length; i++)
-    //   this.topology.displayPlayer(soloistList[i].index, true, 'soloist');
+    //   this.topology.changeTileClass(this.topologyDiv, soloistList[i].index, true, 'soloist');
   }
 
-  addSoloist(soloist) {
-    // this.topology.displayPlayer(soloist.index, true, 'soloist');
+  __addSoloist(soloist) {
+    // this.topology.changeTileClass(this.topologyDiv, soloist.index, true, 'soloist');
 
-    var socket = ioClient.socket;
+    var socket = client.socket;
 
     if (soloist.socketId === socket.io.engine.id) {
-      inputModule.enableTouch(this.topologyDiv);
+      input.enableTouch(this.topologyDiv);
 
       this.infoDiv.classList.add('hidden');
       this.topologyDiv.classList.remove('hidden');
@@ -116,32 +121,22 @@ class PlayerPerformance extends clientSide.PerformanceSoloists {
     }
   }
 
-  removeSoloist(soloist) {
+  __removeSoloist(soloist) {
     var soloistId = soloist.state.soloistId;
 
-    // this.topology.displayPlayer(soloist.index, false, 'soloist');
+    // this.topology.changeTileClass(this.topologyDiv, soloist.index, false, 'soloist');
 
     this.synths[soloistId].update(1, 0);
     this.__changeBackgroundColor(1); // TODO: incorrect
 
-    var socket = ioClient.socket;
+    var socket = client.socket;
 
     if (soloist.socketId === socket.io.engine.id) {
-      inputModule.disableTouch(this.topologyDiv);
+      input.disableTouch(this.topologyDiv);
 
       this.topologyDiv.classList.add('hidden');
       this.infoDiv.classList.remove('hidden');
     }
-  }
-
-  start() {
-    if (this.displayDiv) {
-      this.infoDiv.innerHTML = "<p class='small'>You are at position</p>" + "<div class='position'><span>" + this.placement.label + "</span></div>";
-      this.infoDiv.classList.remove('hidden');
-    }
-
-    this.topology.displayPlayer(this.placement.place, true, 'me');
-    super.start();
   }
 
   __changeBackgroundColor(d) {
@@ -150,13 +145,13 @@ class PlayerPerformance extends clientSide.PerformanceSoloists {
   }
 
   __inputListener() {
-    inputModule.on('touchstart', this.__touchHandler.bind(this));
-    inputModule.on('touchmove', this.__touchHandler.bind(this));
-    inputModule.on('touchend', this.__touchHandler.bind(this));
+    input.on('touchstart', this.__touchHandler.bind(this));
+    input.on('touchmove', this.__touchHandler.bind(this));
+    input.on('touchend', this.__touchHandler.bind(this));
   }
 
   __performanceControlListener() {
-    var socket = ioClient.socket;
+    var socket = client.socket;
 
     socket.on('perf_control', (soloistId, d, s) => {
       this.synths[soloistId].update(d, s);
@@ -165,12 +160,27 @@ class PlayerPerformance extends clientSide.PerformanceSoloists {
   }
 
   __touchHandler(touchData) {
-    var socket = ioClient.socket;
+    var socket = client.socket;
     var x = (touchData.coordinates[0] - this.topologyDiv.offsetLeft + window.scrollX) / this.topologyDiv.offsetWidth;
     var y = (touchData.coordinates[1] - this.topologyDiv.offsetTop + window.scrollY) / this.topologyDiv.offsetHeight;
 
     socket.emit(touchData.event, [x, y], touchData.timestamp); // TODO: might be a good idea to send the time in sever clock. (Requires sync module.)
   }
+
+  start() {
+    super.start();
+
+    client.socket.emit('perf_start');
+
+    if (this.displayDiv) {
+      this.infoDiv.innerHTML = "<p class='small'>You are at position</p>" + "<div class='placement-label'><span>" + this.placement.label + "</span></div>";
+      this.infoDiv.classList.remove('hidden');
+    }
+
+    this.topology.displayTopology(this.topologyDiv);
+    this.topology.changeTileClass(this.topologyDiv, this.placement.index, true, 'me');
+    super.start();
+  }
 }
 
-module.exports = PlayerPerformance;
+module.exports = Performance;

@@ -35,8 +35,18 @@ function getRandomInt(min, max) {
   return min + Math.floor(Math.random() * (max - min + 1));
 }
 
+function arrayRemove(array, value) {
+  var index = array.indexOf(value);
 
-class ServerPerformance extends serverSide.PerformanceSoloists {
+  if (index >= 0) {
+    array.splice(index, 1);
+    return true;
+  }
+
+  return false;
+}
+
+class WanderingSoundPerformance extends serverSide.Module {
   constructor(topology, params = {}) {
     super(params);
 
@@ -44,6 +54,14 @@ class ServerPerformance extends serverSide.PerformanceSoloists {
     this.numSoloists = params.numSoloists || 2;
     this.soloistDuration = params.soloDuration || 4000; // in milliseconds
 
+    this.topology = topology;
+    this.fingerRadius = 0.3;
+
+    // Players management
+    this.players = [];
+    this.sockets = []
+
+    // Soloists management
     this.availableSoloists = createIdentityArray(this.numSoloists);
 
     this.soloists = [];
@@ -51,6 +69,7 @@ class ServerPerformance extends serverSide.PerformanceSoloists {
     this.urn = [];
 
     Array.observe(this.urn, (changes) => {
+      console.log('change !')
       if (changes[0].addedCount > 0 && this.__needSoloist())
         this.__addSoloist();
 
@@ -67,44 +86,48 @@ class ServerPerformance extends serverSide.PerformanceSoloists {
       if (changes[0].removed.length > 0 && this.__needSoloist())
         this.__addSoloist();
     });
-
-    this.topology = topology;
-    this.fingerRadius = 0.3;
   }
 
-  connect(socket, player) {
+  connect(client) {
+    var socket = client.socket;
     socket.join('performing');
 
-    var playerList = this.playing.map((c) => c.getInfo());
-    socket.emit('players_init', playerList);
-    socket.broadcast.emit('player_add', player.getInfo()); // ('/play' namespace)
-    server.io.of('/env').emit('player_add', player.getInfo()); // TODO: generalize with list of namespaces Object.keys(io.nsps)
+    socket.on('perf_start', () => {
+      this.players.push(client);
+      this.sockets[socket.id] = client;
 
-    this.urn.push(player);
-    this.__addSocketListener(player);
-    player.socket.emit('soloists_init', this.soloists.map((s) => s.getInfo()));
+      // Send list of clients performing to the client
+      var playerList = this.players.map((c) => c.getInfo());
+      socket.emit('players_init', playerList);
+      // Send information about the newly connected client to all other clients
+      socket.broadcast.emit('player_add', client.getInfo()); // ('/player' namespace)
+      server.io.of('/env').emit('player_add', client.getInfo()); // TODO: generalize with list of namespaces Object.keys(io.nsps)
 
-    this.__inputListener(player.socket); /// TODO: use client/player instead
+      // Soloists management
+      this.urn.push(client);
+      this.__addSocketListener(client);
+      socket.emit('soloists_init', this.soloists.map((s) => s.getInfo()));
 
-    // console.log(
-    //   '[ServerPerformanceSoloist][connect] Player ' + player.socket.id + ' added.\n' +
-    //   'this.urn: ' + this.urn.map((c) => c.socket.id) + '\n' +
-    //   'this.soloists: ' + this.soloists.map((c) => c.socket.id) + '\n' +
-    //   'this.unselectable: ' + this.unselectable.map((c) => c.socket.id)
-    // );
+      this.__inputListener(socket); /// TODO: use client/player instead
+    })
   }
 
-  disconnect(socket, player) {
+  disconnect(client) {
+    var socket = client.socket;
     var io = server.io;
-    var indexUrn = this.urn.indexOf(player);
-    var indexSoloist = this.soloists.indexOf(player);
-    var indexUnselectable = this.unselectable.indexOf(player);
+    var indexUrn = this.urn.indexOf(client);
+    var indexSoloist = this.soloists.indexOf(client);
+    var indexUnselectable = this.unselectable.indexOf(client);
 
-    socket.broadcast.emit('player_remove', player.getInfo()); // ('/play' namespace)
-    io.of('/env').emit('player_remove', player.getInfo()); // TODO: generalize with list of namespaces Object.keys(io.nsps)
+    // Send disconnection information to the other clients
+    socket.broadcast.emit('player_remove', client.getInfo()); // ('/player' namespace)
+    io.of('/env').emit('player_remove', client.getInfo()); // TODO: generalize with list of namespaces Object.keys(io.nsps)
 
-    this.players.splice(index, 1); // remove player from pending or playing array
+    // Remove client from this.players array
+    arrayRemove(this.players, client);
+    delete this.sockets[client.socket.id]
 
+    // Soloists management
     if (indexUrn > -1)
       this.urn.splice(indexUrn, 1);
     else if (indexUnselectable > -1)
@@ -113,29 +136,20 @@ class ServerPerformance extends serverSide.PerformanceSoloists {
       let soloist = this.soloists.splice(indexSoloist, 1)[0];
       this.availableSoloists.push(soloist.publicState.soloistId);
       soloist.publicState.soloist = null;
-      io.of('/play').emit('soloist_remove', soloist.getInfo());
+      io.of('/player').emit('soloist_remove', soloist.getInfo());
     } else {
-      // console.log('[ServerPerformanceSoloist][disconnect] Player ' + player.socket.id + 'not found.');
+      console.log('[ServerPerformanceSoloist][disconnect] Player ' + client.socket.id + 'not found.');
     }
-
-    // console.log("this.availableSoloists", this.availableSoloists);
-
-    // console.log(
-    //   '[ServerPerformanceSoloist][disconnect] Player ' + player.socket.id + ' removed.\n' +
-    //   'this.urn: ' + this.urn.map((c) => c.socket.id) + '\n' +
-    //   'this.soloists: ' + this.soloists.map((c) => c.socket.id) + '\n' +
-    //   'this.unselectable: ' + this.unselectable.map((c) => c.socket.id)
-    // );
 
     socket.leave('performing');
   }
 
-  __addSocketListener(player) {
-    player.socket.on('touchstart', () => {
-      if (!player.publicState.hasPlayed) {
-        clearTimeout(player.privateState.timeout);
-        player.privateState.timeout = setTimeout(() => {
-          this.__removeSoloist(player);
+  __addSocketListener(client) {
+    client.socket.on('touchstart', () => {
+      if (!client.publicState.hasPlayed) {
+        clearTimeout(client.privateState.timeout);
+        client.privateState.timeout = setTimeout(() => {
+          this.__removeSoloist(client);
         }, this.soloistDuration);
       }
     });
@@ -146,24 +160,18 @@ class ServerPerformance extends serverSide.PerformanceSoloists {
     if (this.__needSoloist() && this.urn.length > 0) {
       let soloistId = this.availableSoloists.splice(0, 1)[0];
       let index = getRandomInt(0, this.urn.length - 1);
-      let player = this.urn.splice(index, 1)[0];
-      io.of('/play').emit('soloist_add', player.getInfo());
+      let client = this.urn.splice(index, 1)[0];
+      io.of('/player').emit('soloist_add', client.getInfo());
+      console.log(client.getInfo())
 
-      player.publicState.soloistId = soloistId;
-      player.privateState.timeout = setTimeout(() => {
-        this.__removeSoloist(player);
+      client.publicState.soloistId = soloistId;
+      client.privateState.timeout = setTimeout(() => {
+        this.__removeSoloist(client);
       }, this.idleDuration);
 
-      this.soloists.push(player);
-
-      // console.log(
-      //   '[ServerPerformanceSoloist][addSoloist] Soloist ' + player.socket.id + ' added.\n' +
-      //   'this.urn: ' + this.urn.map((c) => c.socket.id) + '\n' +
-      //   'this.soloists: ' + this.soloists.map((c) => c.socket.id) + '\n' +
-      //   'this.unselectable: ' + this.unselectable.map((c) => c.socket.id)
-      // );
+      this.soloists.push(client);
     } else {
-      // console.log("[ServerPerformanceSoloist][addSoloist] No soloist to add.")
+      console.log("[ServerPerformanceSoloist][addSoloist] No soloist to add.")
     }
   }
 
@@ -176,17 +184,9 @@ class ServerPerformance extends serverSide.PerformanceSoloists {
       this.availableSoloists.push(soloist.publicState.soloistId);
       soloist.publicState.soloist = null;
       this.unselectable.push(soloist);
-      io.of('/play').emit('soloist_remove', soloist.getInfo());
-
-      // console.log(
-      //   '[ServerPerformanceSoloist][removeSoloist] Soloist ' + soloist.socket.id + ' removed.\n' +
-      //   'this.urn: ' + this.urn.map((c) => c.socket.id) + '\n' +
-      //   'this.soloists: ' + this.soloists.map((c) => c.socket.id) + '\n' +
-      //   'this.unselectable: ' + this.unselectable.map((c) => c.socket.id)
-      // );
-
+      io.of('/player').emit('soloist_remove', soloist.getInfo());
     } else {
-      // console.log("[ServerPerformanceSoloist][removeSoloist] Player " + soloist.socket.id + "not found in this.soloists.");
+      console.log("[ServerPerformanceSoloist][removeSoloist] Player " + soloist.socket.id + "not found in this.soloists.");
     }
   }
 
@@ -195,13 +195,6 @@ class ServerPerformance extends serverSide.PerformanceSoloists {
       this.urn.push(this.unselectable.pop());
     // this.urn.splice(0, 0, this.unselectable[0]);
     // clearArray(this.unselectable);
-
-    // console.log(
-    //   '[ServerPerformanceSoloist][transferUnselectedToUrn]\n' +
-    //   'this.urn: ' + this.urn.map((c) => c.socket.id) + '\n' +
-    //   'this.soloists: ' + this.soloists.map((c) => c.socket.id) + '\n' +
-    //   'this.unselectable: ' + this.unselectable.map((c) => c.socket.id)
-    // );
   }
 
   __needSoloist() {
@@ -230,27 +223,25 @@ class ServerPerformance extends serverSide.PerformanceSoloists {
 
     if (index > -1) {
       let io = server.io;
-      let player = this.managers['/play'].sockets[socket.id];
-      let soloistId = player.publicState.soloistId;
+      let client = this.sockets[socket.id];
+      let soloistId = client.publicState.soloistId;
       let dSub = 1;
       let s = 0;
 
-      var players = this.managers['/play'].playing;
-
       switch (type) {
         case 'touchstart':
-          player.privateState.inputArray = [{
+          client.privateState.inputArray = [{
             position: fingerPosition,
             timeStamp: timeStamp
           }];
 
-          for (let i = 0; i < players.length; i++) {
-            let anyPlayer = players[i];
-            let place = anyPlayer.place;
-            let position = this.topology.positions[place];
+          for (let i = 0; i < this.players.length; i++) {
+            let player = this.players[i];
+            let index = player.index;
+            let position = this.topology.positions[index];
             let d = scaleDistance(calculateNormalizedDistance(position, fingerPosition, h, w), this.fingerRadius);
 
-            anyPlayer.socket.emit('perf_control', soloistId, d, 0);
+            player.socket.emit('perf_control', soloistId, d, 0);
 
             if (dSub > d)
               dSub = d; // subwoofer distance calculation
@@ -260,7 +251,7 @@ class ServerPerformance extends serverSide.PerformanceSoloists {
           break;
 
         case 'touchmove':
-          var inputArray = player.privateState.inputArray;
+          var inputArray = client.privateState.inputArray;
 
           inputArray.push({
             position: fingerPosition,
@@ -269,13 +260,13 @@ class ServerPerformance extends serverSide.PerformanceSoloists {
 
           s = calculateVelocity(inputArray[inputArray.length - 1], inputArray[inputArray.length - 2], h, w);
           s = Math.min(1, s / 2); // TODO: have a better way to set the threshold
-          for (let i = 0; i < players.length; i++) {
-            let anyPlayer = players[i];
-            let place = anyPlayer.place;
-            let position = this.topology.positions[place];
+          for (let i = 0; i < this.players.length; i++) {
+            let player = this.players[i];
+            let index = player.index;
+            let position = this.topology.positions[index];
             let d = scaleDistance(calculateNormalizedDistance(position, fingerPosition, h, w), this.fingerRadius);
 
-            anyPlayer.socket.emit('perf_control', soloistId, d, s);
+            player.socket.emit('perf_control', soloistId, d, s);
 
             if (dSub > d)
               dSub = d; // subwoofer distance calculation
@@ -285,7 +276,7 @@ class ServerPerformance extends serverSide.PerformanceSoloists {
           break;
 
         case 'touchend':
-          io.of('/play').in('performing').emit('perf_control', soloistId, 1, s);
+          io.of('/player').in('performing').emit('perf_control', soloistId, 1, s);
           io.of('/env').emit('perf_control', soloistId, fingerPosition, 1, s);
           break;
       }
@@ -293,4 +284,4 @@ class ServerPerformance extends serverSide.PerformanceSoloists {
   }
 }
 
-module.exports = ServerPerformance;
+module.exports = WanderingSoundPerformance;

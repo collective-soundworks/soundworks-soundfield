@@ -1,12 +1,23 @@
-var ioClient = clientSide.ioClient;
+var clientSide = require('soundworks/client');
+var client = clientSide.client;
 
-clientSide.ioClient.init('/env');
+client.init('/env');
 
-window.addEventListener('load', () => {
-  var socket = ioClient.socket;
+class Env extends clientSide.Module {
+  constructor() {
+    super('env', true);
 
-  socket.on('perf_control', (soloistId, pos, d, s) => {
-    //console.log('env perf_control', soloistId, pos, d, s);
-  });
+    var socket = client.socket;
 
+    socket.on('perf_control', (soloistId, pos, d, s) => {
+      //console.log('env perf_control', soloistId, pos, d, s);
+    });
+  }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  var sync = new clientSide.SetupSync();
+  var env = new Env();
+
+  client.start(client.serial(sync, env));
 });

@@ -1,19 +1,31 @@
 'use strict';
 
 var clientSide = require('soundworks/client');
-var PlayerPerformance = require('./PlayerPerformance');
-var ioClient = clientSide.ioClient;
+var Performance = require('./Performance');
+var client = clientSide.client;
 
-ioClient.init('/play');
+client.init('/player');
 
 window.addEventListener('load', () => {
-  var topology = new clientSide.TopologyGeneric();
-  var sync = new clientSide.SetupSync();
-  var placement = new clientSide.SetupPlacementAssigned();
-  var performance = new PlayerPerformance(topology, placement);
-  var manager = new clientSide.Manager([sync, placement], performance, topology);
-
-  ioClient.start(() => {
-    manager.start();
+  var topology = new clientSide.Topology({'display': true});
+  var welcome = new clientSide.Dialog({
+    id: 'welcome',
+    text: "<p>Welcome to <b>Wandering Sound</b>.</p> <p>Touch the screen to join!</p>",
+    activateAudio: true
   });
+  // var sync = new clientSide.Sync();
+  var placement = new clientSide.Placement({'display': true});
+  var performance = new Performance(topology, placement);
+
+  client.start(
+    client.serial(
+      client.parallel(
+        welcome,
+        topology
+      ),
+      placement,
+      performance
+    )
+  );
+
 });
