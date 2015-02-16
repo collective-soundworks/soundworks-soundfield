@@ -69,7 +69,6 @@ class WanderingSoundPerformance extends serverSide.Module {
     this.urn = [];
 
     Array.observe(this.urn, (changes) => {
-      console.log('change !')
       if (changes[0].addedCount > 0 && this.__needSoloist())
         this.__addSoloist();
 
@@ -162,7 +161,6 @@ class WanderingSoundPerformance extends serverSide.Module {
       let index = getRandomInt(0, this.urn.length - 1);
       let client = this.urn.splice(index, 1)[0];
       io.of('/player').emit('soloist_add', client.getInfo());
-      console.log(client.getInfo())
 
       client.publicState.soloistId = soloistId;
       client.privateState.timeout = setTimeout(() => {
