@@ -47,14 +47,14 @@ function arrayRemove(array, value) {
 }
 
 class WanderingSoundPerformance extends serverSide.Module {
-  constructor(topology, params = {}) {
+  constructor(seatmap, params = {}) {
     super(params);
 
     this.idleDuration = params.idleDuration || 2000; // in milliseconds
     this.numSoloists = params.numSoloists || 2;
     this.soloistDuration = params.soloDuration || 4000; // in milliseconds
 
-    this.topology = topology;
+    this.seatmap = seatmap;
     this.fingerRadius = 0.3;
 
     // Players management
@@ -223,8 +223,8 @@ class WanderingSoundPerformance extends serverSide.Module {
     //   "fingerPosition: { x: " + fingerPosition[0] + ", y: " + fingerPosition[1] + " }\n" +
     //   "timeStamp: " + timeStamp
     // );
-    var h = this.topology.height;
-    var w = this.topology.width;
+    var h = this.seatmap.height;
+    var w = this.seatmap.width;
 
     // Check if socket.id is still among the soloists.
     // Necessary because of network latency: sometimes,
@@ -249,7 +249,7 @@ class WanderingSoundPerformance extends serverSide.Module {
           for (let i = 0; i < this.players.length; i++) {
             let player = this.players[i];
             let index = player.index;
-            let position = this.topology.positions[index];
+            let position = this.seatmap.positions[index];
             let d = scaleDistance(calculateNormalizedDistance(position, fingerPosition, h, w), this.fingerRadius);
 
             player.socket.emit('perf_control', soloistId, d, 0);
@@ -274,7 +274,7 @@ class WanderingSoundPerformance extends serverSide.Module {
           for (let i = 0; i < this.players.length; i++) {
             let player = this.players[i];
             let index = player.index;
-            let position = this.topology.positions[index];
+            let position = this.seatmap.positions[index];
             let d = scaleDistance(calculateNormalizedDistance(position, fingerPosition, h, w), this.fingerRadius);
 
             player.socket.emit('perf_control', soloistId, d, s);
