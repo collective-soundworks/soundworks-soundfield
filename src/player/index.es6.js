@@ -14,7 +14,7 @@ window.addEventListener('load', () => {
     activateAudio: true
   });
   // var sync = new clientSide.Sync();
-  var checkin = new clientSide.Checkin({'display': true});
+  var checkin = new clientSide.Checkin({'dialog': true});
   var performance = new Performance(topology, checkin);
 
   client.start(

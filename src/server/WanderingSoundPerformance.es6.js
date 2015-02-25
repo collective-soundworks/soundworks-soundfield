@@ -112,7 +112,7 @@ class WanderingSoundPerformance extends serverSide.Module {
       socket.emit('soloists_init', this.soloists.map((s) => this.__getInfo(s)));
 
       this.__inputListener(socket); /// TODO: use client/player instead
-    })
+    });
   }
 
   disconnect(client) {
@@ -129,7 +129,7 @@ class WanderingSoundPerformance extends serverSide.Module {
 
     // Remove client from this.players array
     arrayRemove(this.players, client);
-    delete this.sockets[client.socket.id]
+    delete this.sockets[client.socket.id];
 
     // Soloists management
     if (indexUrn > -1)
@@ -182,7 +182,7 @@ class WanderingSoundPerformance extends serverSide.Module {
 
       this.soloists.push(client);
     } else {
-      console.log("[ServerPerformanceSoloist][addSoloist] No soloist to add.")
+      console.log("[ServerPerformanceSoloist][addSoloist] No soloist to add.");
     }
   }
 

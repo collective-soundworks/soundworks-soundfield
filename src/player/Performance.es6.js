@@ -41,14 +41,14 @@ class Performance extends clientSide.Module {
     infoDiv.classList.add('info');
 
     this.infoDiv = infoDiv;
-    this.displayDiv.appendChild(this.infoDiv);
+    this.view.appendChild(this.infoDiv);
 
     // topology display
     var topologyDiv = document.createElement('div');
     topologyDiv.setAttribute('id', 'topology');
 
     this.topologyDiv = topologyDiv;
-    this.displayDiv.appendChild(this.topologyDiv);
+    this.view.appendChild(this.topologyDiv);
 
     // setup liteners
     this.__inputListener();
@@ -141,7 +141,7 @@ class Performance extends clientSide.Module {
 
   __changeBackgroundColor(d) {
     var value = Math.floor(Math.max(1 - d, 0) * 255);
-    this.displayDiv.style.backgroundColor = 'rgb(' + value + ', ' + value + ', ' + value + ')';
+    this.view.style.backgroundColor = 'rgb(' + value + ', ' + value + ', ' + value + ')';
   }
 
   __inputListener() {
@@ -172,7 +172,7 @@ class Performance extends clientSide.Module {
 
     client.socket.emit('perf_start');
 
-    if (this.displayDiv) {
+    if (this.view) {
       this.infoDiv.innerHTML = "<p class='small'>You are at position</p>" + "<div class='checkin-label'><span>" + this.checkin.label + "</span></div>";
       this.infoDiv.classList.remove('hidden');
     }
