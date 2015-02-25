@@ -27,10 +27,10 @@ function beep() {
 }
 
 class Performance extends clientSide.Module {
-  constructor(topology, checkin, params = {}) {
+  constructor(seatmap, checkin, params = {}) {
     super(params);
 
-    this.topology = topology;
+    this.seatmap = seatmap;
     this.checkin = checkin;
     this.synths = [new SimpleSynth(false), new SimpleSynth(true)];
 
@@ -43,12 +43,12 @@ class Performance extends clientSide.Module {
     this.infoDiv = infoDiv;
     this.displayDiv.appendChild(this.infoDiv);
 
-    // topology display
-    var topologyDiv = document.createElement('div');
-    topologyDiv.setAttribute('id', 'topology');
+    // seatmap display
+    var seatmapDiv = document.createElement('div');
+    seatmapDiv.setAttribute('id', 'seatmap');
 
-    this.topologyDiv = topologyDiv;
-    this.displayDiv.appendChild(this.topologyDiv);
+    this.seatmapDiv = seatmapDiv;
+    this.displayDiv.appendChild(this.seatmapDiv);
 
     // setup liteners
     this.__inputListener();
@@ -83,15 +83,15 @@ class Performance extends clientSide.Module {
 
   __initPlayers(playerList) {
     for (let i = 0; i < playerList.length; i++)
-      this.topology.changeTileClass(this.topologyDiv, playerList[i].index, true);
+      this.seatmap.addClassToTile(this.seatmapDiv, playerList[i].index, 'player');
   }
 
   __addPlayer(player) {
-    this.topology.changeTileClass(this.topologyDiv, player.index, true);
+    this.seatmap.addClassToTile(this.seatmapDiv, player.index, 'player');
   }
 
   __removePlayer(player) {
-    this.topology.changeTileClass(this.topologyDiv, player.index, false);
+    this.seatmap.removeClassFromTile(this.seatmapDiv, player.index, 'player');
 
     var soloistId = player.soloistId;
 
@@ -103,19 +103,19 @@ class Performance extends clientSide.Module {
 
   __initSoloists(soloistList) {
     // for (let i = 0; i < soloistList.length; i++)
-    //   this.topology.changeTileClass(this.topologyDiv, soloistList[i].index, true, 'soloist');
+    //   this.seatmap.addClassToTile(this.seatmapDiv, soloistList[i].index, 'soloist');
   }
 
   __addSoloist(soloist) {
-    // this.topology.changeTileClass(this.topologyDiv, soloist.index, true, 'soloist');
+    // this.seatmap.addClassToTile(this.seatmapDiv, soloist.index, 'soloist');
 
     var socket = client.socket;
 
     if (soloist.socketId === socket.io.engine.id) {
-      input.enableTouch(this.topologyDiv);
+      input.enableTouch(this.seatmapDiv);
 
       this.infoDiv.classList.add('hidden');
-      this.topologyDiv.classList.remove('hidden');
+      this.seatmapDiv.classList.remove('hidden');
 
       beep();
     }
@@ -124,7 +124,7 @@ class Performance extends clientSide.Module {
   __removeSoloist(soloist) {
     var soloistId = soloist.soloistId;
 
-    // this.topology.changeTileClass(this.topologyDiv, soloist.index, false, 'soloist');
+    // this.seatmap.removeClassFromTile(this.seatmapDiv, soloist.index, 'soloist');
 
     this.synths[soloistId].update(1, 0);
     this.__changeBackgroundColor(1); // TODO: incorrect
@@ -132,9 +132,9 @@ class Performance extends clientSide.Module {
     var socket = client.socket;
 
     if (soloist.socketId === socket.io.engine.id) {
-      input.disableTouch(this.topologyDiv);
+      input.disableTouch(this.seatmapDiv);
 
-      this.topologyDiv.classList.add('hidden');
+      this.seatmapDiv.classList.add('hidden');
       this.infoDiv.classList.remove('hidden');
     }
   }
@@ -161,8 +161,8 @@ class Performance extends clientSide.Module {
 
   __touchHandler(touchData) {
     var socket = client.socket;
-    var x = (touchData.coordinates[0] - this.topologyDiv.offsetLeft + window.scrollX) / this.topologyDiv.offsetWidth;
-    var y = (touchData.coordinates[1] - this.topologyDiv.offsetTop + window.scrollY) / this.topologyDiv.offsetHeight;
+    var x = (touchData.coordinates[0] - this.seatmapDiv.offsetLeft + window.scrollX) / this.seatmapDiv.offsetWidth;
+    var y = (touchData.coordinates[1] - this.seatmapDiv.offsetTop + window.scrollY) / this.seatmapDiv.offsetHeight;
 
     socket.emit(touchData.event, [x, y], touchData.timestamp); // TODO: might be a good idea to send the time in sever clock. (Requires sync module.)
   }
@@ -177,8 +177,8 @@ class Performance extends clientSide.Module {
       this.infoDiv.classList.remove('hidden');
     }
 
-    this.topology.displayTopology(this.topologyDiv);
-    this.topology.changeTileClass(this.topologyDiv, this.checkin.index, true, 'me');
+    this.seatmap.display(this.seatmapDiv);
+    this.seatmap.addClassToTile(this.seatmapDiv, this.checkin.index, 'me');
     super.start();
   }
 }

@@ -7,21 +7,22 @@ var client = clientSide.client;
 client.init('/player');
 
 window.addEventListener('load', () => {
-  var topology = new clientSide.Topology({'display': true});
+  var seatmap = new clientSide.Seatmap();
   var welcome = new clientSide.Dialog({
     id: 'welcome',
     text: "<p>Welcome to <b>Wandering Sound</b>.</p> <p>Touch the screen to join!</p>",
     activateAudio: true
   });
-  // var sync = new clientSide.Sync();
-  var checkin = new clientSide.Checkin({'display': true});
-  var performance = new Performance(topology, checkin);
+  var checkin = new clientSide.Checkin({
+    'display': true
+  });
+  var performance = new Performance(seatmap, checkin);
 
   client.start(
     client.serial(
       client.parallel(
         welcome,
-        topology
+        seatmap
       ),
       checkin,
       performance
