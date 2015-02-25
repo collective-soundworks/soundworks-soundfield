@@ -9,8 +9,8 @@
   "dependencies": {
     "audio-context": "wavesjs/audio-context.git#master",
     "ejs": "^2.3.1",
-    "express": "^4.8.8",
-    "socket.io": "^1.1.0",
+    "express": "^4.8.6",
+    "socket.io": "1.1.0",
     "soundworks": "collective-soundworks/soundworks.git#master"
   },
   "devDependencies": {
