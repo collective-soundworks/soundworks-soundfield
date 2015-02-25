@@ -138,9 +138,9 @@ class WanderingSoundPerformance extends serverSide.Module {
       this.unselectable.splice(indexUnselectable, 1);
     else if (indexSoloist > -1) {
       let soloist = this.soloists.splice(indexSoloist, 1)[0];
+      io.of('/player').emit('soloist_remove', this.__getInfo(soloist));
       this.availableSoloists.push(soloist.data.performance.soloistId);
       soloist.data.performance.soloistId = null;
-      io.of('/player').emit('soloist_remove', this.__getInfo(soloist));
     } else {
       console.log('[ServerPerformanceSoloist][disconnect] Player ' + client.socket.id + 'not found.');
     }
@@ -160,8 +160,8 @@ class WanderingSoundPerformance extends serverSide.Module {
 
   __addSocketListener(client) {
     client.socket.on('touchstart', () => {
-      clearTimeout(client.privateState.timeout);
-      client.privateState.timeout = setTimeout(() => {
+      clearTimeout(client.data.performance.timeout);
+      client.data.performance.timeout = setTimeout(() => {
         this.__removeSoloist(client);
       }, this.soloistDuration);
     });
@@ -176,7 +176,7 @@ class WanderingSoundPerformance extends serverSide.Module {
       io.of('/player').emit('soloist_add', this.__getInfo(client));
 
       client.data.performance.soloistId = soloistId;
-      client.privateState.timeout = setTimeout(() => {
+      client.data.performance.timeout = setTimeout(() => {
         this.__removeSoloist(client);
       }, this.idleDuration);
 
@@ -192,10 +192,10 @@ class WanderingSoundPerformance extends serverSide.Module {
 
     if (index > -1) {
       soloist = this.soloists.splice(index, 1)[0];
+      io.of('/player').emit('soloist_remove', this.__getInfo(soloist));
       this.availableSoloists.push(soloist.data.performance.soloistId);
       soloist.data.performance.soloistId = null;
       this.unselectable.push(soloist);
-      io.of('/player').emit('soloist_remove', this.__getInfo(soloist));
     } else {
       console.log("[ServerPerformanceSoloist][removeSoloist] Player " + soloist.socket.id + "not found in this.soloists.");
     }
@@ -241,7 +241,7 @@ class WanderingSoundPerformance extends serverSide.Module {
 
       switch (type) {
         case 'touchstart':
-          client.privateState.inputArray = [{
+          client.data.performance.inputArray = [{
             position: fingerPosition,
             timeStamp: timeStamp
           }];
@@ -262,7 +262,7 @@ class WanderingSoundPerformance extends serverSide.Module {
           break;
 
         case 'touchmove':
-          var inputArray = client.privateState.inputArray;
+          var inputArray = client.data.performance.inputArray;
 
           inputArray.push({
             position: fingerPosition,

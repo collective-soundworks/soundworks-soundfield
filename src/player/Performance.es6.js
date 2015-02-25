@@ -28,7 +28,7 @@ function beep() {
 
 class Performance extends clientSide.Module {
   constructor(seatmap, checkin, params = {}) {
-    super(params);
+    super('performance', true);
 
     this.seatmap = seatmap;
     this.checkin = checkin;
@@ -48,7 +48,7 @@ class Performance extends clientSide.Module {
     seatmapDiv.setAttribute('id', 'seatmap');
 
     this.seatmapDiv = seatmapDiv;
-    this.displayDiv.appendChild(this.seatmapDiv);
+    this.view.appendChild(this.seatmapDiv);
 
     // setup liteners
     this.__inputListener();
