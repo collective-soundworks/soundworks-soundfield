@@ -27,11 +27,11 @@ function beep() {
 }
 
 class Performance extends clientSide.Module {
-  constructor(topology, placement, params = {}) {
+  constructor(topology, checkin, params = {}) {
     super(params);
 
     this.topology = topology;
-    this.placement = placement;
+    this.checkin = checkin;
     this.synths = [new SimpleSynth(false), new SimpleSynth(true)];
 
     // place info display
@@ -93,7 +93,7 @@ class Performance extends clientSide.Module {
   __removePlayer(player) {
     this.topology.changeTileClass(this.topologyDiv, player.index, false);
 
-    var soloistId = player.state.soloistId;
+    var soloistId = player.soloistId;
 
     if (soloistId) {
       this.synths[soloistId].update(1, 0);
@@ -122,7 +122,7 @@ class Performance extends clientSide.Module {
   }
 
   __removeSoloist(soloist) {
-    var soloistId = soloist.state.soloistId;
+    var soloistId = soloist.soloistId;
 
     // this.topology.changeTileClass(this.topologyDiv, soloist.index, false, 'soloist');
 
@@ -173,12 +173,12 @@ class Performance extends clientSide.Module {
     client.socket.emit('perf_start');
 
     if (this.displayDiv) {
-      this.infoDiv.innerHTML = "<p class='small'>You are at position</p>" + "<div class='placement-label'><span>" + this.placement.label + "</span></div>";
+      this.infoDiv.innerHTML = "<p class='small'>You are at position</p>" + "<div class='checkin-label'><span>" + this.checkin.label + "</span></div>";
       this.infoDiv.classList.remove('hidden');
     }
 
     this.topology.displayTopology(this.topologyDiv);
-    this.topology.changeTileClass(this.topologyDiv, this.placement.index, true, 'me');
+    this.topology.changeTileClass(this.topologyDiv, this.checkin.index, true, 'me');
     super.start();
   }
 }

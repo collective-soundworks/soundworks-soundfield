@@ -91,21 +91,25 @@ class WanderingSoundPerformance extends serverSide.Module {
     var socket = client.socket;
     socket.join('performing');
 
+    client.data.performance = {};
+
     socket.on('perf_start', () => {
       this.players.push(client);
       this.sockets[socket.id] = client;
 
       // Send list of clients performing to the client
-      var playerList = this.players.map((c) => c.getInfo());
+      var playerList = this.players.map((c) => this.__getInfo(c));
       socket.emit('players_init', playerList);
       // Send information about the newly connected client to all other clients
-      socket.broadcast.emit('player_add', client.getInfo()); // ('/player' namespace)
-      server.io.of('/env').emit('player_add', client.getInfo()); // TODO: generalize with list of namespaces Object.keys(io.nsps)
+
+      var info = this.__getInfo(client);
+      socket.broadcast.emit('player_add', info); // ('/player' namespace)
+      server.io.of('/env').emit('player_add', info); // TODO: generalize with list of namespaces Object.keys(io.nsps)
 
       // Soloists management
       this.urn.push(client);
       this.__addSocketListener(client);
-      socket.emit('soloists_init', this.soloists.map((s) => s.getInfo()));
+      socket.emit('soloists_init', this.soloists.map((s) => this.__getInfo(s)));
 
       this.__inputListener(socket); /// TODO: use client/player instead
     })
@@ -119,8 +123,9 @@ class WanderingSoundPerformance extends serverSide.Module {
     var indexUnselectable = this.unselectable.indexOf(client);
 
     // Send disconnection information to the other clients
-    socket.broadcast.emit('player_remove', client.getInfo()); // ('/player' namespace)
-    io.of('/env').emit('player_remove', client.getInfo()); // TODO: generalize with list of namespaces Object.keys(io.nsps)
+    var info = this.__getInfo(client);
+    socket.broadcast.emit('player_remove', info); // ('/player' namespace)
+    io.of('/env').emit('player_remove', info); // TODO: generalize with list of namespaces Object.keys(io.nsps)
 
     // Remove client from this.players array
     arrayRemove(this.players, client);
@@ -133,9 +138,9 @@ class WanderingSoundPerformance extends serverSide.Module {
       this.unselectable.splice(indexUnselectable, 1);
     else if (indexSoloist > -1) {
       let soloist = this.soloists.splice(indexSoloist, 1)[0];
-      this.availableSoloists.push(soloist.publicState.soloistId);
-      soloist.publicState.soloist = null;
-      io.of('/player').emit('soloist_remove', soloist.getInfo());
+      this.availableSoloists.push(soloist.data.performance.soloistId);
+      soloist.data.performance.soloistId = null;
+      io.of('/player').emit('soloist_remove', this.__getInfo(soloist));
     } else {
       console.log('[ServerPerformanceSoloist][disconnect] Player ' + client.socket.id + 'not found.');
     }
@@ -143,14 +148,22 @@ class WanderingSoundPerformance extends serverSide.Module {
     socket.leave('performing');
   }
 
+  __getInfo(client) {
+    var clientInfo = {
+      socketId: client.socket.id,
+      index: client.index,
+      soloistId: client.data.performance.soloistId
+    };
+
+    return clientInfo;
+  }
+
   __addSocketListener(client) {
     client.socket.on('touchstart', () => {
-      if (!client.publicState.hasPlayed) {
-        clearTimeout(client.privateState.timeout);
-        client.privateState.timeout = setTimeout(() => {
-          this.__removeSoloist(client);
-        }, this.soloistDuration);
-      }
+      clearTimeout(client.privateState.timeout);
+      client.privateState.timeout = setTimeout(() => {
+        this.__removeSoloist(client);
+      }, this.soloistDuration);
     });
   }
 
@@ -160,9 +173,9 @@ class WanderingSoundPerformance extends serverSide.Module {
       let soloistId = this.availableSoloists.splice(0, 1)[0];
       let index = getRandomInt(0, this.urn.length - 1);
       let client = this.urn.splice(index, 1)[0];
-      io.of('/player').emit('soloist_add', client.getInfo());
+      io.of('/player').emit('soloist_add', this.__getInfo(client));
 
-      client.publicState.soloistId = soloistId;
+      client.data.performance.soloistId = soloistId;
       client.privateState.timeout = setTimeout(() => {
         this.__removeSoloist(client);
       }, this.idleDuration);
@@ -179,10 +192,10 @@ class WanderingSoundPerformance extends serverSide.Module {
 
     if (index > -1) {
       soloist = this.soloists.splice(index, 1)[0];
-      this.availableSoloists.push(soloist.publicState.soloistId);
-      soloist.publicState.soloist = null;
+      this.availableSoloists.push(soloist.data.performance.soloistId);
+      soloist.data.performance.soloistId = null;
       this.unselectable.push(soloist);
-      io.of('/player').emit('soloist_remove', soloist.getInfo());
+      io.of('/player').emit('soloist_remove', this.__getInfo(soloist));
     } else {
       console.log("[ServerPerformanceSoloist][removeSoloist] Player " + soloist.socket.id + "not found in this.soloists.");
     }
@@ -222,7 +235,7 @@ class WanderingSoundPerformance extends serverSide.Module {
     if (index > -1) {
       let io = server.io;
       let client = this.sockets[socket.id];
-      let soloistId = client.publicState.soloistId;
+      let soloistId = client.data.performance.soloistId;
       let dSub = 1;
       let s = 0;
 

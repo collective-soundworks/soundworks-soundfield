@@ -14,8 +14,8 @@ window.addEventListener('load', () => {
     activateAudio: true
   });
   // var sync = new clientSide.Sync();
-  var placement = new clientSide.Placement({'display': true});
-  var performance = new Performance(topology, placement);
+  var checkin = new clientSide.Checkin({'display': true});
+  var performance = new Performance(topology, checkin);
 
   client.start(
     client.serial(
@@ -23,9 +23,8 @@ window.addEventListener('load', () => {
         welcome,
         topology
       ),
-      placement,
+      checkin,
       performance
     )
   );
-
 });
