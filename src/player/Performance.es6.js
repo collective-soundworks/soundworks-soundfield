@@ -39,6 +39,7 @@ class Performance extends clientSide.Module {
     infoDiv.setAttribute('id', 'info');
     infoDiv.classList.add('centered-content');
     infoDiv.classList.add('info');
+    infoDiv.classList.add('hidden');
 
     this.infoDiv = infoDiv;
     this.view.appendChild(this.infoDiv);
@@ -46,6 +47,7 @@ class Performance extends clientSide.Module {
     // seatmap display
     var seatmapDiv = document.createElement('div');
     seatmapDiv.setAttribute('id', 'seatmap');
+    seatmapDiv.classList.add('hidden');
 
     this.seatmapDiv = seatmapDiv;
     this.view.appendChild(this.seatmapDiv);
@@ -173,7 +175,7 @@ class Performance extends clientSide.Module {
     client.socket.emit('perf_start');
 
     if (this.view) {
-      this.infoDiv.innerHTML = "<p class='small'>You are at position</p>" + "<div class='checkin-label'><span>" + this.checkin.label + "</span></div>";
+      this.infoDiv.innerHTML = "<p><small>You are at position</small></p>" + "<div class='checkin-label'><span>" + this.checkin.label + "</span></div>";
       this.infoDiv.classList.remove('hidden');
     }
 

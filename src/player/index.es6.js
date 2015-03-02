@@ -14,7 +14,7 @@ window.addEventListener('load', () => {
     activateAudio: true
   });
   var checkin = new clientSide.Checkin({
-    'display': true
+    dialog: true
   });
   var performance = new Performance(seatmap, checkin);
 
