@@ -59,7 +59,6 @@ class WanderingSoundPerformance extends serverSide.Module {
 
     // Players management
     this.players = [];
-    this.sockets = []
 
     // Soloists management
     this.availableSoloists = createIdentityArray(this.numSoloists);
@@ -88,35 +87,32 @@ class WanderingSoundPerformance extends serverSide.Module {
   }
 
   connect(client) {
-    var socket = client.socket;
-    socket.join('performing');
+    // client.socket.join('performing');
 
     client.data.performance = {};
 
-    socket.on('perf_start', () => {
+    client.receive('perf_start', () => {
       this.players.push(client);
-      this.sockets[socket.id] = client;
 
       // Send list of clients performing to the client
       var playerList = this.players.map((c) => this.__getInfo(c));
-      socket.emit('players_init', playerList);
+      client.send('players_init', playerList);
       // Send information about the newly connected client to all other clients
 
       var info = this.__getInfo(client);
-      socket.broadcast.emit('player_add', info); // ('/player' namespace)
-      server.io.of('/env').emit('player_add', info); // TODO: generalize with list of namespaces Object.keys(io.nsps)
+      client.broadcast('player_add', info); // ('/player' namespace)
+      server.broadcast('/env', 'player_add', info); // TODO: generalize with list of namespaces Object.keys(io.nsps)
 
       // Soloists management
       this.urn.push(client);
       this.__addSocketListener(client);
-      socket.emit('soloists_init', this.soloists.map((s) => this.__getInfo(s)));
+      client.send('soloists_init', this.soloists.map((s) => this.__getInfo(s)));
 
-      this.__inputListener(socket); /// TODO: use client/player instead
+      this.__inputListener(client);
     });
   }
 
   disconnect(client) {
-    var socket = client.socket;
     var io = server.io;
     var indexUrn = this.urn.indexOf(client);
     var indexSoloist = this.soloists.indexOf(client);
@@ -124,12 +120,11 @@ class WanderingSoundPerformance extends serverSide.Module {
 
     // Send disconnection information to the other clients
     var info = this.__getInfo(client);
-    socket.broadcast.emit('player_remove', info); // ('/player' namespace)
-    io.of('/env').emit('player_remove', info); // TODO: generalize with list of namespaces Object.keys(io.nsps)
+    client.broadcast('player_remove', info); // ('/player' namespace)
+    server.broadcast('/env', 'player_remove', info); // TODO: generalize with list of namespaces Object.keys(io.nsps)
 
     // Remove client from this.players array
     arrayRemove(this.players, client);
-    delete this.sockets[client.socket.id];
 
     // Soloists management
     if (indexUrn > -1)
@@ -145,7 +140,7 @@ class WanderingSoundPerformance extends serverSide.Module {
       console.log('[ServerPerformanceSoloist][disconnect] Player ' + client.socket.id + 'not found.');
     }
 
-    socket.leave('performing');
+    // client.socket.leave('performing');
   }
 
   __getInfo(client) {
@@ -159,7 +154,7 @@ class WanderingSoundPerformance extends serverSide.Module {
   }
 
   __addSocketListener(client) {
-    client.socket.on('touchstart', () => {
+    client.receive('touchstart', () => {
       clearTimeout(client.data.performance.timeout);
       client.data.performance.timeout = setTimeout(() => {
         this.__removeSoloist(client);
@@ -212,29 +207,28 @@ class WanderingSoundPerformance extends serverSide.Module {
     return this.availableSoloists.length > 0;
   }
 
-  __inputListener(socket) {
-    socket.on('touchstart', (fingerPosition, timeStamp) => this.__touchHandler('touchstart', fingerPosition, timeStamp, socket));
-    socket.on('touchmove', (fingerPosition, timeStamp) => this.__touchHandler('touchmove', fingerPosition, timeStamp, socket));
-    socket.on('touchend', (fingerPosition, timeStamp) => this.__touchHandler('touchend', fingerPosition, timeStamp, socket));
+  __inputListener(client) {
+    client.receive('touchstart', (fingerPosition, timeStamp) => this.__touchHandler('touchstart', fingerPosition, timeStamp, client));
+    client.receive('touchmove', (fingerPosition, timeStamp) => this.__touchHandler('touchmove', fingerPosition, timeStamp, client));
+    client.receive('touchend', (fingerPosition, timeStamp) => this.__touchHandler('touchend', fingerPosition, timeStamp, client));
   }
 
-  __touchHandler(type, fingerPosition, timeStamp, socket) {
-    // console.log("\""+ type + "\" received from player " + socket.id + " with:\n" +
+  __touchHandler(type, fingerPosition, timeStamp, client) {
+    // console.log("\""+ type + "\" received from player " + client.socket.id + " with:\n" +
     //   "fingerPosition: { x: " + fingerPosition[0] + ", y: " + fingerPosition[1] + " }\n" +
     //   "timeStamp: " + timeStamp
     // );
     var h = this.seatmap.height;
     var w = this.seatmap.width;
 
-    // Check if socket.id is still among the soloists.
+    // Check if client. socket.id is still among the soloists.
     // Necessary because of network latency: sometimes,
     // the matrix is still on the display of the player,
     // he is no longer a performer on the server.)
-    var index = this.soloists.map((s) => s.socket.id).indexOf(socket.id);
+    var index = this.soloists.map((s) => s.socket.id).indexOf(client.socket.id); // TODO: check compatibility with socket.io abstraction
 
     if (index > -1) {
       let io = server.io;
-      let client = this.sockets[socket.id];
       let soloistId = client.data.performance.soloistId;
       let dSub = 1;
       let s = 0;
@@ -252,13 +246,13 @@ class WanderingSoundPerformance extends serverSide.Module {
             let position = this.seatmap.positions[index];
             let d = scaleDistance(calculateNormalizedDistance(position, fingerPosition, h, w), this.fingerRadius);
 
-            player.socket.emit('perf_control', soloistId, d, 0);
+            player.send('perf_control', soloistId, d, 0);
 
             if (dSub > d)
               dSub = d; // subwoofer distance calculation
           }
 
-          io.of('/env').emit('perf_control', soloistId, fingerPosition, dSub, s);
+          server.broadcast('/env', 'perf_control', soloistId, fingerPosition, dSub, s);
           break;
 
         case 'touchmove':
@@ -277,18 +271,19 @@ class WanderingSoundPerformance extends serverSide.Module {
             let position = this.seatmap.positions[index];
             let d = scaleDistance(calculateNormalizedDistance(position, fingerPosition, h, w), this.fingerRadius);
 
-            player.socket.emit('perf_control', soloistId, d, s);
+            player.send('perf_control', soloistId, d, s);
 
             if (dSub > d)
               dSub = d; // subwoofer distance calculation
           }
 
-          io.of('/env').emit('perf_control', soloistId, fingerPosition, dSub, s);
+          server.broadcast('/env', 'perf_control', soloistId, fingerPosition, dSub, s);
           break;
 
         case 'touchend':
-          io.of('/player').in('performing').emit('perf_control', soloistId, 1, s);
-          io.of('/env').emit('perf_control', soloistId, fingerPosition, 1, s);
+          server.broadcast('/player', 'perf_control', soloistId, 1, s);
+          // io.of('/player').in('performing').emit('perf_control', soloistId, 1, s); // before socket.io abstraction
+          server.broadcast('/env', 'perf_control', soloistId, fingerPosition, 1, s);
           break;
       }
     }

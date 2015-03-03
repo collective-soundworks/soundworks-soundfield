@@ -56,29 +56,27 @@ class Performance extends clientSide.Module {
     this.__inputListener();
     this.__performanceControlListener();
 
-    var socket = client.socket;
-
-    socket.on('players_init', (playerList) => {
+    client.receive('players_init', (playerList) => {
       this.__initPlayers(playerList);
     });
 
-    socket.on('player_add', (player) => {
+    client.receive('player_add', (player) => {
       this.__addPlayer(player);
     });
 
-    socket.on('player_remove', (player) => {
+    client.receive('player_remove', (player) => {
       this.__removePlayer(player);
     });
 
-    socket.on('soloists_init', (soloistList) => {
+    client.receive('soloists_init', (soloistList) => {
       this.__initSoloists(soloistList);
     });
 
-    socket.on('soloist_add', (soloist) => {
+    client.receive('soloist_add', (soloist) => {
       this.__addSoloist(soloist);
     });
 
-    socket.on('soloist_remove', (soloist) => {
+    client.receive('soloist_remove', (soloist) => {
       this.__removeSoloist(soloist);
     });
   }
@@ -113,7 +111,7 @@ class Performance extends clientSide.Module {
 
     var socket = client.socket;
 
-    if (soloist.socketId === socket.io.engine.id) {
+    if (soloist.socketId === socket.io.engine.id) { // TODO: check compatibility with socket.io abstraction
       input.enableTouch(this.seatmapDiv);
 
       this.infoDiv.classList.add('hidden');
@@ -131,9 +129,7 @@ class Performance extends clientSide.Module {
     this.synths[soloistId].update(1, 0);
     this.__changeBackgroundColor(1); // TODO: incorrect
 
-    var socket = client.socket;
-
-    if (soloist.socketId === socket.io.engine.id) {
+    if (soloist.socketId === client.socket.io.engine.id) {
       input.disableTouch(this.seatmapDiv);
 
       this.seatmapDiv.classList.add('hidden');
@@ -153,26 +149,23 @@ class Performance extends clientSide.Module {
   }
 
   __performanceControlListener() {
-    var socket = client.socket;
-
-    socket.on('perf_control', (soloistId, d, s) => {
+    client.receive('perf_control', (soloistId, d, s) => {
       this.synths[soloistId].update(d, s);
       this.__changeBackgroundColor(d);
     });
   }
 
   __touchHandler(touchData) {
-    var socket = client.socket;
     var x = (touchData.coordinates[0] - this.seatmapDiv.offsetLeft + window.scrollX) / this.seatmapDiv.offsetWidth;
     var y = (touchData.coordinates[1] - this.seatmapDiv.offsetTop + window.scrollY) / this.seatmapDiv.offsetHeight;
 
-    socket.emit(touchData.event, [x, y], touchData.timestamp); // TODO: might be a good idea to send the time in sever clock. (Requires sync module.)
+    client.send(touchData.event, [x, y], touchData.timestamp); // TODO: might be a good idea to send the time in sever clock. (Requires sync module.)
   }
 
   start() {
     super.start();
 
-    client.socket.emit('perf_start');
+    client.send('perf_start');
 
     if (this.view) {
       this.infoDiv.innerHTML = "<p><small>You are at position</small></p>" + "<div class='checkin-label'><span>" + this.checkin.label + "</span></div>";
