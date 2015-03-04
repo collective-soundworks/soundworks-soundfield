@@ -10,4 +10,4 @@ By moving a finger on the matrix on the screen, a `soloist` controls which smart
 
 After some time, another `player` becomes `soloist` and takes over the control of light and sound.
 
-[Click here to see a video demo on YouTube.](http://.youtu.be/9Yk4bYtaOqo)
+[Click here to see a video demo on YouTube.](http://youtu.be/9Yk4bYtaOqo)
