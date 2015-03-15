@@ -35,34 +35,19 @@ function getRandomInt(min, max) {
   return min + Math.floor(Math.random() * (max - min + 1));
 }
 
-function arrayRemove(array, value) {
-  var index = array.indexOf(value);
+class WanderingSoundPerformance extends serverSide.Performance {
+  constructor(seatmap, options = {}) {
+    super();
 
-  if (index >= 0) {
-    array.splice(index, 1);
-    return true;
-  }
-
-  return false;
-}
-
-class WanderingSoundPerformance extends serverSide.Module {
-  constructor(seatmap, params = {}) {
-    super(params);
-
-    this.idleDuration = params.idleDuration || 2000; // in milliseconds
-    this.numSoloists = params.numSoloists || 2;
-    this.soloistDuration = params.soloDuration || 4000; // in milliseconds
+    this.idleDuration = options.idleDuration || 2000; // in milliseconds
+    this.numSoloists = options.numSoloists || 2;
+    this.soloistDuration = options.soloDuration || 4000; // in milliseconds
 
     this.seatmap = seatmap;
     this.fingerRadius = 0.3;
 
-    // Players management
-    this.players = [];
-
     // Soloists management
     this.availableSoloists = createIdentityArray(this.numSoloists);
-
     this.soloists = [];
     this.unselectable = [];
     this.urn = [];
@@ -72,59 +57,53 @@ class WanderingSoundPerformance extends serverSide.Module {
         this.__addSoloist();
 
       if (changes[0].removed.length > 0 && this.urn.length === 0 && this.unselectable.length > 0)
-        this.__transferUnselectedToUrn();
+        this.__transferUnselectableToUrn();
     });
 
     Array.observe(this.unselectable, (changes) => {
       if (changes[0].addedCount > 0 && this.__needSoloist() && this.urn.length === 0)
-        this.__transferUnselectedToUrn();
+        this.__transferUnselectableToUrn();
     });
 
     Array.observe(this.soloists, (changes) => {
-      if (changes[0].removed.length > 0 && this.__needSoloist())
+      if (changes[0].removed.length > 0 && this.__needSoloist() && this.urn.length > 0)
         this.__addSoloist();
     });
   }
 
   connect(client) {
-    // client.socket.join('performing');
+    super.connect(client);
 
     client.data.performance = {};
 
-    client.receive('perf_start', () => {
-      this.players.push(client);
-
+    client.receive('performance:start', () => {
       // Send list of clients performing to the client
       var playerList = this.players.map((c) => this.__getInfo(c));
-      client.send('players_init', playerList);
+      client.send('performance:playersInit', playerList);
       // Send information about the newly connected client to all other clients
 
       var info = this.__getInfo(client);
-      client.broadcast('player_add', info); // ('/player' namespace)
-      server.broadcast('/env', 'player_add', info); // TODO: generalize with list of namespaces Object.keys(io.nsps)
+      client.broadcast('performance:playerAdd', info); // ('/player' namespace)
+      server.broadcast('/env', 'performance:playerAdd', info); // TODO: generalize with list of namespaces Object.keys(io.nsps)
 
       // Soloists management
       this.urn.push(client);
       this.__addSocketListener(client);
-      client.send('soloists_init', this.soloists.map((s) => this.__getInfo(s)));
+      client.send('performance:soloistsInit', this.soloists.map((s) => this.__getInfo(s)));
 
       this.__inputListener(client);
     });
   }
 
   disconnect(client) {
-    var io = server.io;
     var indexUrn = this.urn.indexOf(client);
     var indexSoloist = this.soloists.indexOf(client);
     var indexUnselectable = this.unselectable.indexOf(client);
 
     // Send disconnection information to the other clients
     var info = this.__getInfo(client);
-    client.broadcast('player_remove', info); // ('/player' namespace)
-    server.broadcast('/env', 'player_remove', info); // TODO: generalize with list of namespaces Object.keys(io.nsps)
-
-    // Remove client from this.players array
-    arrayRemove(this.players, client);
+    client.broadcast('performance:playerRemove', info); // ('/player' namespace)
+    server.broadcast('/env', 'performance:playerRemove', info); // TODO: generalize with list of namespaces Object.keys(io.nsps)
 
     // Soloists management
     if (indexUrn > -1)
@@ -133,14 +112,14 @@ class WanderingSoundPerformance extends serverSide.Module {
       this.unselectable.splice(indexUnselectable, 1);
     else if (indexSoloist > -1) {
       let soloist = this.soloists.splice(indexSoloist, 1)[0];
-      io.of('/player').emit('soloist_remove', this.__getInfo(soloist));
+      server.broadcast('/player', 'performance:soloistRemove', this.__getInfo(soloist));
       this.availableSoloists.push(soloist.data.performance.soloistId);
       soloist.data.performance.soloistId = null;
     } else {
-      console.log('[ServerPerformanceSoloist][disconnect] Player ' + client.socket.id + 'not found.');
+      console.log('[WanderingSoundPerformance][disconnect] Player ' + client.socket.id + ' not found.');
     }
 
-    // client.socket.leave('performing');
+    super.disconnect(client);
   }
 
   __getInfo(client) {
@@ -163,12 +142,10 @@ class WanderingSoundPerformance extends serverSide.Module {
   }
 
   __addSoloist() {
-    var io = server.io;
     if (this.__needSoloist() && this.urn.length > 0) {
       let soloistId = this.availableSoloists.splice(0, 1)[0];
       let index = getRandomInt(0, this.urn.length - 1);
       let client = this.urn.splice(index, 1)[0];
-      io.of('/player').emit('soloist_add', this.__getInfo(client));
 
       client.data.performance.soloistId = soloistId;
       client.data.performance.timeout = setTimeout(() => {
@@ -176,31 +153,52 @@ class WanderingSoundPerformance extends serverSide.Module {
       }, this.idleDuration);
 
       this.soloists.push(client);
+
+      server.broadcast('/player', 'performance:soloistAdd', this.__getInfo(client));
+
+      // console.log("[WanderingSoundPerformance][__addSoloist]\n" +
+      //   "this.urn: " + this.urn.map((c) => c.socket.id) + "\n" +
+      //   "this.soloists: " + this.soloists.map((c) => c.socket.id) + "\n" +
+      //   "this.unselectable: " + this.unselectable.map((c) => c.socket.id) + "\n" +
+      //   "---------------------------------------------"
+      // );
     } else {
-      console.log("[ServerPerformanceSoloist][addSoloist] No soloist to add.");
+      console.log("[WanderingSoundPerformance][__addSoloist] No soloist to add.");
     }
   }
 
   __removeSoloist(soloist) {
-    var io = server.io;
-    var index = this.soloists.indexOf(soloist);
+    let index = this.soloists.indexOf(soloist);
 
-    if (index > -1) {
-      soloist = this.soloists.splice(index, 1)[0];
-      io.of('/player').emit('soloist_remove', this.__getInfo(soloist));
-      this.availableSoloists.push(soloist.data.performance.soloistId);
+    if (index >= 0) {
+      let soloistId = soloist.data.performance.soloistId;
+      server.broadcast('/player', 'performance:soloistRemove', this.__getInfo(soloist));
+      this.availableSoloists.push(soloistId);
       soloist.data.performance.soloistId = null;
+      this.soloists.splice(index, 1);
       this.unselectable.push(soloist);
+
+      // console.log("[WanderingSoundPerformance][__removeSoloist]\n" +
+      //   "this.urn: " + this.urn.map((c) => c.socket.id) + "\n" +
+      //   "this.soloists: " + this.soloists.map((c) => c.socket.id) + "\n" +
+      //   "this.unselectable: " + this.unselectable.map((c) => c.socket.id) + "\n" +
+      //   "---------------------------------------------"
+      // );
     } else {
-      console.log("[ServerPerformanceSoloist][removeSoloist] Player " + soloist.socket.id + "not found in this.soloists.");
+      console.log("[WanderingSoundPerformance][__removeSoloist] Player " + soloist.socket.id + "not found in this.soloists.");
     }
   }
 
-  __transferUnselectedToUrn() {
+  __transferUnselectableToUrn() {
     while (this.unselectable.length > 0) // TODO: change this push the whole array at once
       this.urn.push(this.unselectable.pop());
-    // this.urn.splice(0, 0, this.unselectable[0]);
-    // clearArray(this.unselectable);
+
+    // console.log("[WanderingSoundPerformance][__transferUnselectableToUrn]\n" +
+    //   "this.urn: " + this.urn.map((c) => c.socket.id) + "\n" +
+    //   "this.soloists: " + this.soloists.map((c) => c.socket.id) + "\n" +
+    //   "this.unselectable: " + this.unselectable.map((c) => c.socket.id) + "\n" +
+    //   "---------------------------------------------"
+    // );
   }
 
   __needSoloist() {
@@ -228,7 +226,6 @@ class WanderingSoundPerformance extends serverSide.Module {
     var index = this.soloists.map((s) => s.socket.id).indexOf(client.socket.id); // TODO: check compatibility with socket.io abstraction
 
     if (index > -1) {
-      let io = server.io;
       let soloistId = client.data.performance.soloistId;
       let dSub = 1;
       let s = 0;
@@ -246,13 +243,13 @@ class WanderingSoundPerformance extends serverSide.Module {
             let position = this.seatmap.positions[index];
             let d = scaleDistance(calculateNormalizedDistance(position, fingerPosition, h, w), this.fingerRadius);
 
-            player.send('perf_control', soloistId, d, 0);
+            player.send('performance:control', soloistId, d, 0);
 
             if (dSub > d)
               dSub = d; // subwoofer distance calculation
           }
 
-          server.broadcast('/env', 'perf_control', soloistId, fingerPosition, dSub, s);
+          server.broadcast('/env', 'performance:control', soloistId, fingerPosition, dSub, s);
           break;
 
         case 'touchmove':
@@ -271,19 +268,18 @@ class WanderingSoundPerformance extends serverSide.Module {
             let position = this.seatmap.positions[index];
             let d = scaleDistance(calculateNormalizedDistance(position, fingerPosition, h, w), this.fingerRadius);
 
-            player.send('perf_control', soloistId, d, s);
+            player.send('performance:control', soloistId, d, s);
 
             if (dSub > d)
               dSub = d; // subwoofer distance calculation
           }
 
-          server.broadcast('/env', 'perf_control', soloistId, fingerPosition, dSub, s);
+          server.broadcast('/env', 'performance:control', soloistId, fingerPosition, dSub, s);
           break;
 
         case 'touchend':
-          server.broadcast('/player', 'perf_control', soloistId, 1, s);
-          // io.of('/player').in('performing').emit('perf_control', soloistId, 1, s); // before socket.io abstraction
-          server.broadcast('/env', 'perf_control', soloistId, fingerPosition, 1, s);
+          server.broadcast('/player', 'performance:control', soloistId, 1, s);
+          server.broadcast('/env', 'performance:control', soloistId, fingerPosition, 1, s);
           break;
       }
     }

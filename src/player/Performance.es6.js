@@ -26,23 +26,13 @@ function beep() {
   o.stop(time + duration);
 }
 
-class Performance extends clientSide.Module {
-  constructor(seatmap, checkin, params = {}) {
-    super('performance', true);
+class Performance extends clientSide.Performance {
+  constructor(seatmap, checkin, options = {}) {
+    super(options);
 
     this.seatmap = seatmap;
     this.checkin = checkin;
     this.synths = [new SimpleSynth(false), new SimpleSynth(true)];
-
-    // place info display
-    var infoDiv = document.createElement('div');
-    infoDiv.setAttribute('id', 'info');
-    infoDiv.classList.add('centered-content');
-    infoDiv.classList.add('info');
-    infoDiv.classList.add('hidden');
-
-    this.infoDiv = infoDiv;
-    this.view.appendChild(this.infoDiv);
 
     // seatmap display
     var seatmapDiv = document.createElement('div');
@@ -56,27 +46,27 @@ class Performance extends clientSide.Module {
     this.__inputListener();
     this.__performanceControlListener();
 
-    client.receive('players_init', (playerList) => {
+    client.receive('performance:playersInit', (playerList) => {
       this.__initPlayers(playerList);
     });
 
-    client.receive('player_add', (player) => {
+    client.receive('performance:playerAdd', (player) => {
       this.__addPlayer(player);
     });
 
-    client.receive('player_remove', (player) => {
+    client.receive('performance:playerRemove', (player) => {
       this.__removePlayer(player);
     });
 
-    client.receive('soloists_init', (soloistList) => {
+    client.receive('performance:soloistsInit', (soloistList) => {
       this.__initSoloists(soloistList);
     });
 
-    client.receive('soloist_add', (soloist) => {
+    client.receive('performance:soloistAdd', (soloist) => {
       this.__addSoloist(soloist);
     });
 
-    client.receive('soloist_remove', (soloist) => {
+    client.receive('performance:soloistRemove', (soloist) => {
       this.__removeSoloist(soloist);
     });
   }
@@ -114,7 +104,7 @@ class Performance extends clientSide.Module {
     if (soloist.socketId === socket.io.engine.id) { // TODO: check compatibility with socket.io abstraction
       input.enableTouch(this.seatmapDiv);
 
-      this.infoDiv.classList.add('hidden');
+      this.__centeredViewContent.classList.add('hidden');
       this.seatmapDiv.classList.remove('hidden');
 
       beep();
@@ -133,7 +123,7 @@ class Performance extends clientSide.Module {
       input.disableTouch(this.seatmapDiv);
 
       this.seatmapDiv.classList.add('hidden');
-      this.infoDiv.classList.remove('hidden');
+      this.__centeredViewContent.classList.remove('hidden');
     }
   }
 
@@ -149,7 +139,7 @@ class Performance extends clientSide.Module {
   }
 
   __performanceControlListener() {
-    client.receive('perf_control', (soloistId, d, s) => {
+    client.receive('performance:control', (soloistId, d, s) => {
       this.synths[soloistId].update(d, s);
       this.__changeBackgroundColor(d);
     });
@@ -165,16 +155,12 @@ class Performance extends clientSide.Module {
   start() {
     super.start();
 
-    client.send('perf_start');
-
-    if (this.view) {
-      this.infoDiv.innerHTML = "<p><small>You are at position</small></p>" + "<div class='checkin-label'><span>" + this.checkin.label + "</span></div>";
-      this.infoDiv.classList.remove('hidden');
-    }
+    let htmlContent = "<p><small>You are at position</small></p>" + "<div class='checkin-label'><span>" + this.checkin.label + "</span></div>";
+    this.setCenteredViewContent(htmlContent);
+    this.__centeredViewContent.classList.add('info');
 
     this.seatmap.display(this.seatmapDiv);
     this.seatmap.addClassToTile(this.seatmapDiv, this.checkin.index, 'me');
-    super.start();
   }
 }
 

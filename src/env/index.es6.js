@@ -7,7 +7,7 @@ class Env extends clientSide.Module {
   constructor() {
     super('env', true);
     
-    client.receive('perf_control', (soloistId, pos, d, s) => {
+    client.receive('performance:control', (soloistId, pos, d, s) => {
       //console.log('env perf_control', soloistId, pos, d, s);
     });
   }
