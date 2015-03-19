@@ -71,31 +71,27 @@ class WanderingSoundPerformance extends serverSide.Performance {
     });
   }
 
-  connect(client) {
-    super.connect(client);
+  enter(client) {
+    super.enter(client);
 
-    client.data.performance = {};
+    // Send list of clients performing to the client
+    var playerList = this.players.map((c) => this.__getInfo(c));
+    client.send('performance:playersInit', playerList);
+    // Send information about the newly connected client to all other clients
 
-    client.receive('performance:start', () => {
-      // Send list of clients performing to the client
-      var playerList = this.players.map((c) => this.__getInfo(c));
-      client.send('performance:playersInit', playerList);
-      // Send information about the newly connected client to all other clients
+    var info = this.__getInfo(client);
+    client.broadcast('performance:playerAdd', info); // ('/player' namespace)
+    server.broadcast('/env', 'performance:playerAdd', info); // TODO: generalize with list of namespaces Object.keys(io.nsps)
 
-      var info = this.__getInfo(client);
-      client.broadcast('performance:playerAdd', info); // ('/player' namespace)
-      server.broadcast('/env', 'performance:playerAdd', info); // TODO: generalize with list of namespaces Object.keys(io.nsps)
+    // Soloists management
+    this.urn.push(client);
+    this.__addSocketListener(client);
+    client.send('performance:soloistsInit', this.soloists.map((s) => this.__getInfo(s)));
 
-      // Soloists management
-      this.urn.push(client);
-      this.__addSocketListener(client);
-      client.send('performance:soloistsInit', this.soloists.map((s) => this.__getInfo(s)));
-
-      this.__inputListener(client);
-    });
+    this.__inputListener(client);
   }
 
-  disconnect(client) {
+  exit(client) {
     var indexUrn = this.urn.indexOf(client);
     var indexSoloist = this.soloists.indexOf(client);
     var indexUnselectable = this.unselectable.indexOf(client);
@@ -119,7 +115,7 @@ class WanderingSoundPerformance extends serverSide.Performance {
       console.log('[WanderingSoundPerformance][disconnect] Player ' + client.socket.id + ' not found.');
     }
 
-    super.disconnect(client);
+    super.exit(client);
   }
 
   __getInfo(client) {
