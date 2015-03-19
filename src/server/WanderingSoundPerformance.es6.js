@@ -74,7 +74,7 @@ class WanderingSoundPerformance extends serverSide.Performance {
   connect(client) {
     super.connect(client);
 
-    client.data.performance = {};
+    client.modules.performance = {};
 
     client.receive('performance:start', () => {
       // Send list of clients performing to the client
@@ -113,8 +113,8 @@ class WanderingSoundPerformance extends serverSide.Performance {
     else if (indexSoloist > -1) {
       let soloist = this.soloists.splice(indexSoloist, 1)[0];
       server.broadcast('/player', 'performance:soloistRemove', this.__getInfo(soloist));
-      this.availableSoloists.push(soloist.data.performance.soloistId);
-      soloist.data.performance.soloistId = null;
+      this.availableSoloists.push(soloist.modules.performance.soloistId);
+      soloist.modules.performance.soloistId = null;
     } else {
       console.log('[WanderingSoundPerformance][disconnect] Player ' + client.socket.id + ' not found.');
     }
@@ -126,7 +126,7 @@ class WanderingSoundPerformance extends serverSide.Performance {
     var clientInfo = {
       socketId: client.socket.id,
       index: client.index,
-      soloistId: client.data.performance.soloistId
+      soloistId: client.modules.performance.soloistId
     };
 
     return clientInfo;
@@ -134,8 +134,8 @@ class WanderingSoundPerformance extends serverSide.Performance {
 
   __addSocketListener(client) {
     client.receive('touchstart', () => {
-      clearTimeout(client.data.performance.timeout);
-      client.data.performance.timeout = setTimeout(() => {
+      clearTimeout(client.modules.performance.timeout);
+      client.modules.performance.timeout = setTimeout(() => {
         this.__removeSoloist(client);
       }, this.soloistDuration);
     });
@@ -147,8 +147,8 @@ class WanderingSoundPerformance extends serverSide.Performance {
       let index = getRandomInt(0, this.urn.length - 1);
       let client = this.urn.splice(index, 1)[0];
 
-      client.data.performance.soloistId = soloistId;
-      client.data.performance.timeout = setTimeout(() => {
+      client.modules.performance.soloistId = soloistId;
+      client.modules.performance.timeout = setTimeout(() => {
         this.__removeSoloist(client);
       }, this.idleDuration);
 
@@ -171,10 +171,10 @@ class WanderingSoundPerformance extends serverSide.Performance {
     let index = this.soloists.indexOf(soloist);
 
     if (index >= 0) {
-      let soloistId = soloist.data.performance.soloistId;
+      let soloistId = soloist.modules.performance.soloistId;
       server.broadcast('/player', 'performance:soloistRemove', this.__getInfo(soloist));
       this.availableSoloists.push(soloistId);
-      soloist.data.performance.soloistId = null;
+      soloist.modules.performance.soloistId = null;
       this.soloists.splice(index, 1);
       this.unselectable.push(soloist);
 
@@ -226,13 +226,13 @@ class WanderingSoundPerformance extends serverSide.Performance {
     var index = this.soloists.map((s) => s.socket.id).indexOf(client.socket.id); // TODO: check compatibility with socket.io abstraction
 
     if (index > -1) {
-      let soloistId = client.data.performance.soloistId;
+      let soloistId = client.modules.performance.soloistId;
       let dSub = 1;
       let s = 0;
 
       switch (type) {
         case 'touchstart':
-          client.data.performance.inputArray = [{
+          client.modules.performance.inputArray = [{
             position: fingerPosition,
             timeStamp: timeStamp
           }];
@@ -253,7 +253,7 @@ class WanderingSoundPerformance extends serverSide.Performance {
           break;
 
         case 'touchmove':
-          var inputArray = client.data.performance.inputArray;
+          var inputArray = client.modules.performance.inputArray;
 
           inputArray.push({
             position: fingerPosition,
