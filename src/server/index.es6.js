@@ -15,10 +15,12 @@ var dir = path.join(__dirname, '../../public');
  *  Scenario
  * ======================================================================= */
 
-var seatmap = new serverSide.Seatmap({type: 'matrix', cols: 3, rows: 2});
-var checkin = new serverSide.Checkin({seatmap: seatmap, order: 'random'});
-var performance = new WanderingSoundPerformance(seatmap);
+var setup = new serverSide.Setup();
+setup.generate('matrix', {cols: 3, rows: 2});
+
+var checkin = new serverSide.Checkin({setup: setup});
+var performance = new WanderingSoundPerformance(setup);
 
 server.start(app, dir, 3000);
-server.map('/player', 'Wandering Sound', seatmap, checkin, performance);
-server.map('/env', 'Wandering Sound — Environment', seatmap, performance);
+server.map('/player', 'Wandering Sound', setup, checkin, performance);
+server.map('/env', 'Wandering Sound — Environment', setup, performance);

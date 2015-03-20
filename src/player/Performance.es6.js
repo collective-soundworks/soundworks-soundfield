@@ -27,20 +27,20 @@ function beep() {
 }
 
 class Performance extends clientSide.Performance {
-  constructor(seatmap, checkin, options = {}) {
+  constructor(setup, checkin, options = {}) {
     super(options);
 
-    this.seatmap = seatmap;
+    this.setup = setup;
     this.checkin = checkin;
     this.synths = [new SimpleSynth(false), new SimpleSynth(true)];
 
-    // seatmap display
-    var seatmapDiv = document.createElement('div');
-    seatmapDiv.setAttribute('id', 'seatmap');
-    seatmapDiv.classList.add('hidden');
+    // setup display
+    var setupDiv = document.createElement('div');
+    setupDiv.setAttribute('id', 'setup');
+    setupDiv.classList.add('hidden');
 
-    this.seatmapDiv = seatmapDiv;
-    this.view.appendChild(this.seatmapDiv);
+    this.setupDiv = setupDiv;
+    this.view.appendChild(this.setupDiv);
 
     // setup liteners
     this.__inputListener();
@@ -73,15 +73,15 @@ class Performance extends clientSide.Performance {
 
   __initPlayers(playerList) {
     for (let i = 0; i < playerList.length; i++)
-      this.seatmap.addClassToTile(this.seatmapDiv, playerList[i].index, 'player');
+      this.setup.addClassToTile(this.setupDiv, playerList[i].index, 'player');
   }
 
   __addPlayer(player) {
-    this.seatmap.addClassToTile(this.seatmapDiv, player.index, 'player');
+    this.setup.addClassToTile(this.setupDiv, player.index, 'player');
   }
 
   __removePlayer(player) {
-    this.seatmap.removeClassFromTile(this.seatmapDiv, player.index, 'player');
+    this.setup.removeClassFromTile(this.setupDiv, player.index, 'player');
 
     var soloistId = player.soloistId;
 
@@ -93,19 +93,19 @@ class Performance extends clientSide.Performance {
 
   __initSoloists(soloistList) {
     // for (let i = 0; i < soloistList.length; i++)
-    //   this.seatmap.addClassToTile(this.seatmapDiv, soloistList[i].index, 'soloist');
+    //   this.setup.addClassToTile(this.setupDiv, soloistList[i].index, 'soloist');
   }
 
   __addSoloist(soloist) {
-    // this.seatmap.addClassToTile(this.seatmapDiv, soloist.index, 'soloist');
+    // this.setup.addClassToTile(this.setupDiv, soloist.index, 'soloist');
 
     var socket = client.socket;
 
     if (soloist.socketId === socket.io.engine.id) { // TODO: check compatibility with socket.io abstraction
-      input.enableTouch(this.seatmapDiv);
+      input.enableTouch(this.setupDiv);
 
       this.__centeredViewContent.classList.add('hidden');
-      this.seatmapDiv.classList.remove('hidden');
+      this.setupDiv.classList.remove('hidden');
 
       beep();
     }
@@ -114,15 +114,15 @@ class Performance extends clientSide.Performance {
   __removeSoloist(soloist) {
     var soloistId = soloist.soloistId;
 
-    // this.seatmap.removeClassFromTile(this.seatmapDiv, soloist.index, 'soloist');
+    // this.setup.removeClassFromTile(this.setupDiv, soloist.index, 'soloist');
 
     this.synths[soloistId].update(1, 0);
     this.__changeBackgroundColor(1); // TODO: incorrect
 
     if (soloist.socketId === client.socket.io.engine.id) {
-      input.disableTouch(this.seatmapDiv);
+      input.disableTouch(this.setupDiv);
 
-      this.seatmapDiv.classList.add('hidden');
+      this.setupDiv.classList.add('hidden');
       this.__centeredViewContent.classList.remove('hidden');
     }
   }
@@ -146,8 +146,8 @@ class Performance extends clientSide.Performance {
   }
 
   __touchHandler(touchData) {
-    var x = (touchData.coordinates[0] - this.seatmapDiv.offsetLeft + window.scrollX) / this.seatmapDiv.offsetWidth;
-    var y = (touchData.coordinates[1] - this.seatmapDiv.offsetTop + window.scrollY) / this.seatmapDiv.offsetHeight;
+    var x = (touchData.coordinates[0] - this.setupDiv.offsetLeft + window.scrollX) / this.setupDiv.offsetWidth;
+    var y = (touchData.coordinates[1] - this.setupDiv.offsetTop + window.scrollY) / this.setupDiv.offsetHeight;
 
     client.send(touchData.event, [x, y], touchData.timestamp); // TODO: might be a good idea to send the time in sever clock. (Requires sync module.)
   }
@@ -159,8 +159,8 @@ class Performance extends clientSide.Performance {
     this.setCenteredViewContent(htmlContent);
     this.__centeredViewContent.classList.add('info');
 
-    this.seatmap.display(this.seatmapDiv);
-    this.seatmap.addClassToTile(this.seatmapDiv, this.checkin.index, 'me');
+    this.setup.display(this.setupDiv);
+    this.setup.addClassToTile(this.setupDiv, this.checkin.index, 'me');
   }
 }
 

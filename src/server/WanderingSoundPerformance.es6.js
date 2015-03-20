@@ -36,14 +36,14 @@ function getRandomInt(min, max) {
 }
 
 class WanderingSoundPerformance extends serverSide.Performance {
-  constructor(seatmap, options = {}) {
+  constructor(setup, options = {}) {
     super();
 
     this.idleDuration = options.idleDuration || 2000; // in milliseconds
     this.numSoloists = options.numSoloists || 2;
     this.soloistDuration = options.soloDuration || 4000; // in milliseconds
 
-    this.seatmap = seatmap;
+    this.setup = setup;
     this.fingerRadius = 0.3;
 
     // Soloists management
@@ -112,7 +112,7 @@ class WanderingSoundPerformance extends serverSide.Performance {
       this.availableSoloists.push(soloist.modules.performance.soloistId);
       soloist.modules.performance.soloistId = null;
     } else {
-      console.log('[WanderingSoundPerformance][disconnect] Player ' + client.socket.id + ' not found.');
+      // console.log('[WanderingSoundPerformance][disconnect] Player ' + client.socket.id + ' not found.');
     }
 
     super.exit(client);
@@ -121,7 +121,7 @@ class WanderingSoundPerformance extends serverSide.Performance {
   __getInfo(client) {
     var clientInfo = {
       socketId: client.socket.id,
-      index: client.index,
+      index: client.player.index,
       soloistId: client.modules.performance.soloistId
     };
 
@@ -159,7 +159,7 @@ class WanderingSoundPerformance extends serverSide.Performance {
       //   "---------------------------------------------"
       // );
     } else {
-      console.log("[WanderingSoundPerformance][__addSoloist] No soloist to add.");
+      // console.log("[WanderingSoundPerformance][__addSoloist] No soloist to add.");
     }
   }
 
@@ -181,7 +181,7 @@ class WanderingSoundPerformance extends serverSide.Performance {
       //   "---------------------------------------------"
       // );
     } else {
-      console.log("[WanderingSoundPerformance][__removeSoloist] Player " + soloist.socket.id + "not found in this.soloists.");
+      // console.log("[WanderingSoundPerformance][__removeSoloist] Player " + soloist.socket.id + " not found in this.soloists.");
     }
   }
 
@@ -212,8 +212,8 @@ class WanderingSoundPerformance extends serverSide.Performance {
     //   "fingerPosition: { x: " + fingerPosition[0] + ", y: " + fingerPosition[1] + " }\n" +
     //   "timeStamp: " + timeStamp
     // );
-    var h = this.seatmap.height;
-    var w = this.seatmap.width;
+    var h = this.setup.height;
+    var w = this.setup.width;
 
     // Check if client. socket.id is still among the soloists.
     // Necessary because of network latency: sometimes,
@@ -235,8 +235,8 @@ class WanderingSoundPerformance extends serverSide.Performance {
 
           for (let i = 0; i < this.players.length; i++) {
             let player = this.players[i];
-            let index = player.index;
-            let position = this.seatmap.positions[index];
+            let index = player.player.index;
+            let position = this.setup.positions[index];
             let d = scaleDistance(calculateNormalizedDistance(position, fingerPosition, h, w), this.fingerRadius);
 
             player.send('performance:control', soloistId, d, 0);
@@ -260,8 +260,8 @@ class WanderingSoundPerformance extends serverSide.Performance {
           s = Math.min(1, s / 2); // TODO: have a better way to set the threshold
           for (let i = 0; i < this.players.length; i++) {
             let player = this.players[i];
-            let index = player.index;
-            let position = this.seatmap.positions[index];
+            let index = player.player.index;
+            let position = this.setup.positions[index];
             let d = scaleDistance(calculateNormalizedDistance(position, fingerPosition, h, w), this.fingerRadius);
 
             player.send('performance:control', soloistId, d, s);
