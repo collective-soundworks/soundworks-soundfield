@@ -1,8 +1,11 @@
 {
   "name": "wandering-sound",
-  "author": "Sébastien Robaszkiewicz",
+  "authors": [
+    "Sébastien Robaszkiewicz",
+    "Norbert Schnell"
+  ],
   "description": "Wandering Sound is a collective performance based on Soundworks that enables players to play on other players' devices by moving their finger on the matrix represented on the screen of their phones.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "scripts": {
     "start": "node src/server/index.js"
   },
