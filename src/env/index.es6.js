@@ -1,7 +1,7 @@
 var clientSide = require('soundworks/client');
 var client = clientSide.client;
 
-client.init('/env');
+client.init('env');
 
 class Env extends clientSide.Module {
   constructor() {

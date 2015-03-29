@@ -73,15 +73,15 @@ class Performance extends clientSide.Performance {
 
   __initPlayers(playerList) {
     for (let i = 0; i < playerList.length; i++)
-      this.setup.addClassToTile(this.setupDiv, playerList[i].index, 'player');
+      this.setup.addClassToPosition(this.setupDiv, playerList[i].index, 'player');
   }
 
   __addPlayer(player) {
-    this.setup.addClassToTile(this.setupDiv, player.index, 'player');
+    this.setup.addClassToPosition(this.setupDiv, player.index, 'player');
   }
 
   __removePlayer(player) {
-    this.setup.removeClassFromTile(this.setupDiv, player.index, 'player');
+    this.setup.removeClassFromPosition(this.setupDiv, player.index, 'player');
 
     var soloistId = player.soloistId;
 
@@ -93,15 +93,13 @@ class Performance extends clientSide.Performance {
 
   __initSoloists(soloistList) {
     // for (let i = 0; i < soloistList.length; i++)
-    //   this.setup.addClassToTile(this.setupDiv, soloistList[i].index, 'soloist');
+    //   this.setup.addClassToPosition(this.setupDiv, soloistList[i].index, 'soloist');
   }
 
   __addSoloist(soloist) {
-    // this.setup.addClassToTile(this.setupDiv, soloist.index, 'soloist');
+    // this.setup.addClassToPosition(this.setupDiv, soloist.index, 'soloist');
 
-    var socket = client.socket;
-
-    if (soloist.socketId === socket.io.engine.id) { // TODO: check compatibility with socket.io abstraction
+    if (soloist.index === client.index) {
       input.enableTouch(this.setupDiv);
 
       this.__centeredViewContent.classList.add('hidden');
@@ -114,12 +112,12 @@ class Performance extends clientSide.Performance {
   __removeSoloist(soloist) {
     var soloistId = soloist.soloistId;
 
-    // this.setup.removeClassFromTile(this.setupDiv, soloist.index, 'soloist');
+    // this.setup.removeClassFromPosition(this.setupDiv, soloist.index, 'soloist');
 
     this.synths[soloistId].update(1, 0);
     this.__changeBackgroundColor(1); // TODO: incorrect
 
-    if (soloist.socketId === client.socket.io.engine.id) {
+    if (soloist.index === client.index) {
       input.disableTouch(this.setupDiv);
 
       this.setupDiv.classList.add('hidden');
@@ -160,7 +158,7 @@ class Performance extends clientSide.Performance {
     this.__centeredViewContent.classList.add('info');
 
     this.setup.display(this.setupDiv);
-    this.setup.addClassToTile(this.setupDiv, this.checkin.index, 'me');
+    this.setup.addClassToPosition(this.setupDiv, client.index, 'me');
   }
 }
 

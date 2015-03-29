@@ -4,7 +4,7 @@ var clientSide = require('soundworks/client');
 var Performance = require('./Performance');
 var client = clientSide.client;
 
-client.init('/player');
+client.init('player');
 
 window.addEventListener('load', () => {
   var setup = new clientSide.Setup();

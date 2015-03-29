@@ -11,7 +11,7 @@ function calculateNormalizedDistance(a, b, h, w) {
 }
 
 function calculateVelocity(a, b, h, w) {
-  return calculateNormalizedDistance(a.position, b.position, h, w) / Math.abs(a.timeStamp - b.timeStamp);
+  return calculateNormalizedDistance(a.coordinates, b.coordinates, h, w) / Math.abs(a.timeStamp - b.timeStamp);
 }
 
 function scaleDistance(d, m) {
@@ -75,13 +75,13 @@ class WanderingSoundPerformance extends serverSide.Performance {
     super.enter(client);
 
     // Send list of clients performing to the client
-    var playerList = this.players.map((c) => this.__getInfo(c));
+    var playerList = this.clients.map((c) => this.__getInfo(c));
     client.send('performance:playersInit', playerList);
     // Send information about the newly connected client to all other clients
 
     var info = this.__getInfo(client);
-    client.broadcast('performance:playerAdd', info); // ('/player' namespace)
-    server.broadcast('/env', 'performance:playerAdd', info); // TODO: generalize with list of namespaces Object.keys(io.nsps)
+    client.broadcast('performance:playerAdd', info);
+    server.broadcast('env', 'performance:playerAdd', info); // TODO: generalize with list of client types Object.keys(io.nsps)
 
     // Soloists management
     this.urn.push(client);
@@ -98,8 +98,8 @@ class WanderingSoundPerformance extends serverSide.Performance {
 
     // Send disconnection information to the other clients
     var info = this.__getInfo(client);
-    client.broadcast('performance:playerRemove', info); // ('/player' namespace)
-    server.broadcast('/env', 'performance:playerRemove', info); // TODO: generalize with list of namespaces Object.keys(io.nsps)
+    client.broadcast('performance:playerRemove', info);
+    server.broadcast('env', 'performance:playerRemove', info); // TODO: generalize with list of client types Object.keys(io.nsps)
 
     // Soloists management
     if (indexUrn > -1)
@@ -108,11 +108,11 @@ class WanderingSoundPerformance extends serverSide.Performance {
       this.unselectable.splice(indexUnselectable, 1);
     else if (indexSoloist > -1) {
       let soloist = this.soloists.splice(indexSoloist, 1)[0];
-      server.broadcast('/player', 'performance:soloistRemove', this.__getInfo(soloist));
+      server.broadcast('player', 'performance:soloistRemove', this.__getInfo(soloist));
       this.availableSoloists.push(soloist.modules.performance.soloistId);
       soloist.modules.performance.soloistId = null;
     } else {
-      // console.log('[WanderingSoundPerformance][disconnect] Player ' + client.socket.id + ' not found.');
+      // console.log('[WanderingSoundPerformance][disconnect] Player ' + client.index + ' not found.');
     }
 
     super.exit(client);
@@ -120,8 +120,7 @@ class WanderingSoundPerformance extends serverSide.Performance {
 
   __getInfo(client) {
     var clientInfo = {
-      socketId: client.socket.id,
-      index: client.player.index,
+      index: client.index,
       soloistId: client.modules.performance.soloistId
     };
 
@@ -150,12 +149,12 @@ class WanderingSoundPerformance extends serverSide.Performance {
 
       this.soloists.push(client);
 
-      server.broadcast('/player', 'performance:soloistAdd', this.__getInfo(client));
+      server.broadcast('player', 'performance:soloistAdd', this.__getInfo(client));
 
       // console.log("[WanderingSoundPerformance][__addSoloist]\n" +
-      //   "this.urn: " + this.urn.map((c) => c.socket.id) + "\n" +
-      //   "this.soloists: " + this.soloists.map((c) => c.socket.id) + "\n" +
-      //   "this.unselectable: " + this.unselectable.map((c) => c.socket.id) + "\n" +
+      //   "this.urn: " + this.urn.map((c) => c.index) + "\n" +
+      //   "this.soloists: " + this.soloists.map((c) => c.index) + "\n" +
+      //   "this.unselectable: " + this.unselectable.map((c) => c.index) + "\n" +
       //   "---------------------------------------------"
       // );
     } else {
@@ -168,20 +167,20 @@ class WanderingSoundPerformance extends serverSide.Performance {
 
     if (index >= 0) {
       let soloistId = soloist.modules.performance.soloistId;
-      server.broadcast('/player', 'performance:soloistRemove', this.__getInfo(soloist));
+      server.broadcast('player', 'performance:soloistRemove', this.__getInfo(soloist));
       this.availableSoloists.push(soloistId);
       soloist.modules.performance.soloistId = null;
       this.soloists.splice(index, 1);
       this.unselectable.push(soloist);
 
       // console.log("[WanderingSoundPerformance][__removeSoloist]\n" +
-      //   "this.urn: " + this.urn.map((c) => c.socket.id) + "\n" +
-      //   "this.soloists: " + this.soloists.map((c) => c.socket.id) + "\n" +
-      //   "this.unselectable: " + this.unselectable.map((c) => c.socket.id) + "\n" +
+      //   "this.urn: " + this.urn.map((c) => c.index) + "\n" +
+      //   "this.soloists: " + this.soloists.map((c) => c.index) + "\n" +
+      //   "this.unselectable: " + this.unselectable.map((c) => c.index) + "\n" +
       //   "---------------------------------------------"
       // );
     } else {
-      // console.log("[WanderingSoundPerformance][__removeSoloist] Player " + soloist.socket.id + " not found in this.soloists.");
+      // console.log("[WanderingSoundPerformance][__removeSoloist] Player " + soloist.index + " not found in this.soloists.");
     }
   }
 
@@ -190,9 +189,9 @@ class WanderingSoundPerformance extends serverSide.Performance {
       this.urn.push(this.unselectable.pop());
 
     // console.log("[WanderingSoundPerformance][__transferUnselectableToUrn]\n" +
-    //   "this.urn: " + this.urn.map((c) => c.socket.id) + "\n" +
-    //   "this.soloists: " + this.soloists.map((c) => c.socket.id) + "\n" +
-    //   "this.unselectable: " + this.unselectable.map((c) => c.socket.id) + "\n" +
+    //   "this.urn: " + this.urn.map((c) => c.index) + "\n" +
+    //   "this.soloists: " + this.soloists.map((c) => c.index) + "\n" +
+    //   "this.unselectable: " + this.unselectable.map((c) => c.index) + "\n" +
     //   "---------------------------------------------"
     // );
   }
@@ -202,24 +201,24 @@ class WanderingSoundPerformance extends serverSide.Performance {
   }
 
   __inputListener(client) {
-    client.receive('touchstart', (fingerPosition, timeStamp) => this.__touchHandler('touchstart', fingerPosition, timeStamp, client));
-    client.receive('touchmove', (fingerPosition, timeStamp) => this.__touchHandler('touchmove', fingerPosition, timeStamp, client));
-    client.receive('touchend', (fingerPosition, timeStamp) => this.__touchHandler('touchend', fingerPosition, timeStamp, client));
+    client.receive('touchstart', (touchCoords, timeStamp) => this.__touchHandler('touchstart', touchCoords, timeStamp, client));
+    client.receive('touchmove', (touchCoords, timeStamp) => this.__touchHandler('touchmove', touchCoords, timeStamp, client));
+    client.receive('touchend', (touchCoords, timeStamp) => this.__touchHandler('touchend', touchCoords, timeStamp, client));
   }
 
-  __touchHandler(type, fingerPosition, timeStamp, client) {
-    // console.log("\""+ type + "\" received from player " + client.socket.id + " with:\n" +
-    //   "fingerPosition: { x: " + fingerPosition[0] + ", y: " + fingerPosition[1] + " }\n" +
+  __touchHandler(type, touchCoords, timeStamp, client) {
+    // console.log("\""+ type + "\" received from player " + client.index + " with:\n" +
+    //   "touchCoords: { x: " + touchCoords[0] + ", y: " + touchCoords[1] + " }\n" +
     //   "timeStamp: " + timeStamp
     // );
     var h = this.setup.height;
     var w = this.setup.width;
 
-    // Check if client. socket.id is still among the soloists.
+    // Check if client. index is still among the soloists.
     // Necessary because of network latency: sometimes,
     // the matrix is still on the display of the player,
     // he is no longer a performer on the server.)
-    var index = this.soloists.map((s) => s.socket.id).indexOf(client.socket.id); // TODO: check compatibility with socket.io abstraction
+    var index = this.soloists.map((s) => s.index).indexOf(client.index);
 
     if (index > -1) {
       let soloistId = client.modules.performance.soloistId;
@@ -229,15 +228,14 @@ class WanderingSoundPerformance extends serverSide.Performance {
       switch (type) {
         case 'touchstart':
           client.modules.performance.inputArray = [{
-            position: fingerPosition,
+            coordinates: touchCoords,
             timeStamp: timeStamp
           }];
 
-          for (let i = 0; i < this.players.length; i++) {
-            let player = this.players[i];
-            let index = player.player.index;
-            let position = this.setup.positions[index];
-            let d = scaleDistance(calculateNormalizedDistance(position, fingerPosition, h, w), this.fingerRadius);
+          for (let i = 0; i < this.clients.length; i++) {
+            let player = this.clients[i];
+            let coordinates = player.coordinates;
+            let d = scaleDistance(calculateNormalizedDistance(coordinates, touchCoords, h, w), this.fingerRadius);
 
             player.send('performance:control', soloistId, d, 0);
 
@@ -245,24 +243,23 @@ class WanderingSoundPerformance extends serverSide.Performance {
               dSub = d; // subwoofer distance calculation
           }
 
-          server.broadcast('/env', 'performance:control', soloistId, fingerPosition, dSub, s);
+          server.broadcast('env', 'performance:control', soloistId, touchCoords, dSub, s);
           break;
 
         case 'touchmove':
           var inputArray = client.modules.performance.inputArray;
 
           inputArray.push({
-            position: fingerPosition,
+            coordinates: touchCoords,
             timeStamp: timeStamp
           });
 
           s = calculateVelocity(inputArray[inputArray.length - 1], inputArray[inputArray.length - 2], h, w);
           s = Math.min(1, s / 2); // TODO: have a better way to set the threshold
-          for (let i = 0; i < this.players.length; i++) {
-            let player = this.players[i];
-            let index = player.player.index;
-            let position = this.setup.positions[index];
-            let d = scaleDistance(calculateNormalizedDistance(position, fingerPosition, h, w), this.fingerRadius);
+          for (let i = 0; i < this.clients.length; i++) {
+            let player = this.clients[i];
+            let coordinates = player.coordinates;
+            let d = scaleDistance(calculateNormalizedDistance(coordinates, touchCoords, h, w), this.fingerRadius);
 
             player.send('performance:control', soloistId, d, s);
 
@@ -270,12 +267,12 @@ class WanderingSoundPerformance extends serverSide.Performance {
               dSub = d; // subwoofer distance calculation
           }
 
-          server.broadcast('/env', 'performance:control', soloistId, fingerPosition, dSub, s);
+          server.broadcast('env', 'performance:control', soloistId, touchCoords, dSub, s);
           break;
 
         case 'touchend':
-          server.broadcast('/player', 'performance:control', soloistId, 1, s);
-          server.broadcast('/env', 'performance:control', soloistId, fingerPosition, 1, s);
+          server.broadcast('player', 'performance:control', soloistId, 1, s);
+          server.broadcast('env', 'performance:control', soloistId, touchCoords, 1, s);
           break;
       }
     }

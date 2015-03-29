@@ -22,5 +22,5 @@ var checkin = new serverSide.Checkin({setup: setup});
 var performance = new WanderingSoundPerformance(setup);
 
 server.start(app, dir, 3000);
-server.map('/player', 'Wandering Sound', setup, checkin, performance);
-server.map('/env', 'Wandering Sound — Environment', setup, performance);
+server.map('player', setup, checkin, performance);
+server.map('env', setup, performance);
