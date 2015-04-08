@@ -1,6 +1,7 @@
 'use strict';
 
-var audioContext = require('audio-context');
+var clientSide = require('soundworks/client');
+var audioContext = clientSide.audioContext;
 
 class MvavrgFilter {
   constructor(size) {

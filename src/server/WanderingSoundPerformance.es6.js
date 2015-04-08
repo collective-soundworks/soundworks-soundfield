@@ -128,7 +128,7 @@ class WanderingSoundPerformance extends serverSide.Performance {
   }
 
   __addSocketListener(client) {
-    client.receive('touchstart', () => {
+    client.receive('performance:touchstart', () => {
       clearTimeout(client.modules.performance.timeout);
       client.modules.performance.timeout = setTimeout(() => {
         this.__removeSoloist(client);
@@ -201,9 +201,9 @@ class WanderingSoundPerformance extends serverSide.Performance {
   }
 
   __inputListener(client) {
-    client.receive('touchstart', (touchCoords, timeStamp) => this.__touchHandler('touchstart', touchCoords, timeStamp, client));
-    client.receive('touchmove', (touchCoords, timeStamp) => this.__touchHandler('touchmove', touchCoords, timeStamp, client));
-    client.receive('touchend', (touchCoords, timeStamp) => this.__touchHandler('touchend', touchCoords, timeStamp, client));
+    client.receive('performance:touchstart', (touchCoords, timeStamp) => this.__touchHandler('touchstart', touchCoords, timeStamp, client));
+    client.receive('performance:touchmove', (touchCoords, timeStamp) => this.__touchHandler('touchmove', touchCoords, timeStamp, client));
+    client.receive('performance:touchend', (touchCoords, timeStamp) => this.__touchHandler('touchend', touchCoords, timeStamp, client));
   }
 
   __touchHandler(type, touchCoords, timeStamp, client) {

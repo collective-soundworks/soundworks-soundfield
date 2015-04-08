@@ -3,7 +3,7 @@
 var clientSide = require('soundworks/client');
 var client = clientSide.client;
 var input = clientSide.input;
-var audioContext = require('audio-context');
+var audioContext = clientSide.audioContext;
 var SimpleSynth = require('./SimpleSynth');
 
 function beep() {
@@ -147,7 +147,7 @@ class Performance extends clientSide.Performance {
     var x = (touchData.coordinates[0] - this.setupDiv.offsetLeft + window.scrollX) / this.setupDiv.offsetWidth;
     var y = (touchData.coordinates[1] - this.setupDiv.offsetTop + window.scrollY) / this.setupDiv.offsetHeight;
 
-    client.send(touchData.event, [x, y], touchData.timestamp); // TODO: might be a good idea to send the time in sever clock. (Requires sync module.)
+    client.send('performance:' + touchData.event, [x, y], touchData.timestamp); // TODO: might be a good idea to send the time in sever clock. (Requires sync module.)
   }
 
   start() {

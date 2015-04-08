@@ -5,16 +5,15 @@
     "Norbert Schnell"
   ],
   "description": "Wandering Sound is a collective performance based on Soundworks that enables players to play on other players' devices by moving their finger on the matrix represented on the screen of their phones.",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "scripts": {
     "start": "node src/server/index.js"
   },
   "dependencies": {
-    "audio-context": "wavesjs/audio-context.git#master",
     "ejs": "^2.3.1",
     "express": "^4.8.6",
     "socket.io": "1.1.0",
-    "soundworks": "collective-soundworks/soundworks.git#master"
+    "soundworks": "collective-soundworks/soundworks.git#v0.3.0"
   },
   "devDependencies": {
     "browserify": "~5.11.0",
