@@ -5,21 +5,21 @@ var audioContext = clientSide.audioContext;
 
 class MvavrgFilter {
   constructor(size) {
-    this.__buffer = new Float32Array(size);
-    this.__index = 0;
+    this.buffer = new Float32Array(size);
+    this.index = 0;
   }
 
   input(value) {
-    this.__buffer[this.__index] = value;
+    this.buffer[this.index] = value;
 
     var sum = 0.0;
 
-    for (var i = 0; i < this.__buffer.length; i++)
-      sum += this.__buffer[i];
+    for (var i = 0; i < this.buffer.length; i++)
+      sum += this.buffer[i];
 
-    this.__index = (this.__index + 1) % this.__buffer.length;
+    this.index = (this.index + 1) % this.buffer.length;
 
-    return sum / this.__buffer.length;
+    return sum / this.buffer.length;
   }
 }
 
@@ -33,12 +33,12 @@ class SimpleSynth {
     this.filter.connect(this.output);
     this.filter.frequency.value = 0;
     this.filter.Q.value = 24;
-    this.filter.type = 0;
+    this.filter.type = 'lowpass';
 
     if (voiced) {
       this.osc = audioContext.createOscillator();
       this.osc.connect(this.filter);
-      this.osc.type = "square";
+      this.osc.type = 'square';
       this.osc.frequency.value = 60;
       this.osc.start(0);
 

@@ -34,118 +34,185 @@ class Performance extends clientSide.Performance {
     this.checkin = checkin;
     this.synths = [new SimpleSynth(false), new SimpleSynth(true)];
 
-    // setup display
-    var setupDiv = document.createElement('div');
-    setupDiv.setAttribute('id', 'setup');
-    setupDiv.classList.add('hidden');
+    // display
+    var soloistView = document.createElement('div');
+    soloistView.setAttribute('id', 'setup');
+    soloistView.classList.add('hidden');
 
-    this.setupDiv = setupDiv;
-    this.view.appendChild(this.setupDiv);
+    this.soloistView = soloistView;
+    this.view.appendChild(this.soloistView);
 
     // setup liteners
-    this.__inputListener();
-    this.__performanceControlListener();
+    this._inputListener();
+    this._performanceControlListener();
 
     client.receive('performance:playersInit', (playerList) => {
-      this.__initPlayers(playerList);
+      this._initPlayers(playerList);
     });
 
     client.receive('performance:playerAdd', (player) => {
-      this.__addPlayer(player);
+      this._addPlayer(player);
     });
 
     client.receive('performance:playerRemove', (player) => {
-      this.__removePlayer(player);
+      this._removePlayer(player);
     });
 
     client.receive('performance:soloistsInit', (soloistList) => {
-      this.__initSoloists(soloistList);
+      this._initSoloists(soloistList);
     });
 
     client.receive('performance:soloistAdd', (soloist) => {
-      this.__addSoloist(soloist);
+      this._addSoloist(soloist);
     });
 
     client.receive('performance:soloistRemove', (soloist) => {
-      this.__removeSoloist(soloist);
+      this._removeSoloist(soloist);
     });
   }
 
-  __initPlayers(playerList) {
+  _display() {
+    var div = this.soloistView;
+    var setup = this.setup;
+
+    div.classList.add('setup');
+
+    var heightWidthRatio = setup.height / setup.width;
+    var screenHeight = window.innerHeight;
+    var screenWidth = window.innerWidth;
+    var screenRatio = screenHeight / screenWidth;
+    var heightPx, widthPx;
+
+    if (screenRatio > heightWidthRatio) { // TODO: refine sizes, with container, etc.
+      heightPx = screenWidth * heightWidthRatio;
+      widthPx = screenWidth;
+    } else {
+      heightPx = screenHeight;
+      widthPx = screenHeight / heightWidthRatio;
+    }
+
+    var tileWidth = widthPx / setup.width * setup.spacing;
+    var tileHeight = heightPx / setup.height * setup.spacing;
+    var tileSize = Math.min(tileWidth, tileHeight);
+
+    var tileMargin = tileSize / 10;
+
+    div.style.height = heightPx + "px";
+    div.style.width = widthPx + "px";
+
+    var coordinates = setup.coordinates;
+
+    for (let i = 0; i < coordinates.length; i++) {
+      let tile = document.createElement('div');
+      tile.classList.add('tile');
+
+      tile.setAttribute('data-index', i);
+      tile.setAttribute('data-x', coordinates[i][0]);
+      tile.setAttribute('data-y', coordinates[i][1]);
+      tile.style.height = tileSize - 2 * tileMargin + "px";
+      tile.style.width = tileSize - 2 * tileMargin + "px";
+      tile.style.left = coordinates[i][0] * widthPx - (tileSize - 2 * tileMargin) / 2 + "px";
+      tile.style.top = coordinates[i][1] * heightPx - (tileSize - 2 * tileMargin) / 2 + "px";
+
+      div.appendChild(tile);
+    }
+  }
+
+  _addClassToPosition(index, className) {
+    var div = this.soloistView;
+    var tiles = Array.prototype.slice.call(div.childNodes); // .childNode returns a NodeList
+    var tileIndex = tiles.map((t) => parseInt(t.dataset.index)).indexOf(index);
+    var tile = tiles[tileIndex];
+
+    if (tile)
+      tile.classList.add(className);
+  }
+
+  _removeClassFromPosition(index, className) {
+    var div = this.soloistView;
+    var tiles = Array.prototype.slice.call(div.childNodes); // .childNode returns a NodeList
+    var tileIndex = tiles.map((t) => parseInt(t.dataset.index)).indexOf(index);
+    var tile = tiles[tileIndex];
+
+    if (tile)
+      tile.classList.remove(className);
+  }
+
+  _initPlayers(playerList) {
     for (let i = 0; i < playerList.length; i++)
-      this.setup.addClassToPosition(this.setupDiv, playerList[i].index, 'player');
+      this._addClassToPosition(playerList[i].index, 'player');
   }
 
-  __addPlayer(player) {
-    this.setup.addClassToPosition(this.setupDiv, player.index, 'player');
+  _addPlayer(player) {
+    this._addClassToPosition(player.index, 'player');
   }
 
-  __removePlayer(player) {
-    this.setup.removeClassFromPosition(this.setupDiv, player.index, 'player');
+  _removePlayer(player) {
+    this._removeClassFromPosition(player.index, 'player');
 
     var soloistId = player.soloistId;
 
     if (soloistId) {
       this.synths[soloistId].update(1, 0);
-      this.__changeBackgroundColor(1);
+      this._changeBackgroundColor(1);
     }
   }
 
-  __initSoloists(soloistList) {
+  _initSoloists(soloistList) {
     // for (let i = 0; i < soloistList.length; i++)
-    //   this.setup.addClassToPosition(this.setupDiv, soloistList[i].index, 'soloist');
+    //   this._addClassToPosition(this.soloistView, soloistList[i].index, 'soloist');
   }
 
-  __addSoloist(soloist) {
-    // this.setup.addClassToPosition(this.setupDiv, soloist.index, 'soloist');
+  _addSoloist(soloist) {
+    // this._addClassToPosition(this.soloistView, soloist.index, 'soloist');
 
-    if (soloist.index === client.index) {
-      input.enableTouch(this.setupDiv);
+    if (soloist.index === this.checkin.index) {
+      input.enableTouch(this.soloistView);
 
-      this.__centeredViewContent.classList.add('hidden');
-      this.setupDiv.classList.remove('hidden');
+      this._centeredViewContent.classList.add('hidden');
+      this.soloistView.classList.remove('hidden');
 
       beep();
     }
   }
 
-  __removeSoloist(soloist) {
+  _removeSoloist(soloist) {
     var soloistId = soloist.soloistId;
 
-    // this.setup.removeClassFromPosition(this.setupDiv, soloist.index, 'soloist');
+    // this._removeClassFromPosition(soloist.index, 'soloist');
 
     this.synths[soloistId].update(1, 0);
-    this.__changeBackgroundColor(1); // TODO: incorrect
+    this._changeBackgroundColor(1); // TODO: incorrect
 
-    if (soloist.index === client.index) {
-      input.disableTouch(this.setupDiv);
+    if (soloist.index === this.checkin.index) {
+      input.disableTouch(this.soloistView);
 
-      this.setupDiv.classList.add('hidden');
-      this.__centeredViewContent.classList.remove('hidden');
+      this.soloistView.classList.add('hidden');
+      this._centeredViewContent.classList.remove('hidden');
     }
   }
 
-  __changeBackgroundColor(d) {
+  _changeBackgroundColor(d) {
     var value = Math.floor(Math.max(1 - d, 0) * 255);
     this.view.style.backgroundColor = 'rgb(' + value + ', ' + value + ', ' + value + ')';
   }
 
-  __inputListener() {
-    input.on('touchstart', this.__touchHandler.bind(this));
-    input.on('touchmove', this.__touchHandler.bind(this));
-    input.on('touchend', this.__touchHandler.bind(this));
+  _inputListener() {
+    input.on('touchstart', this._touchHandler.bind(this));
+    input.on('touchmove', this._touchHandler.bind(this));
+    input.on('touchend', this._touchHandler.bind(this));
   }
 
-  __performanceControlListener() {
+  _performanceControlListener() {
     client.receive('performance:control', (soloistId, d, s) => {
       this.synths[soloistId].update(d, s);
-      this.__changeBackgroundColor(d);
+      this._changeBackgroundColor(d);
     });
   }
 
-  __touchHandler(touchData) {
-    var x = (touchData.coordinates[0] - this.setupDiv.offsetLeft + window.scrollX) / this.setupDiv.offsetWidth;
-    var y = (touchData.coordinates[1] - this.setupDiv.offsetTop + window.scrollY) / this.setupDiv.offsetHeight;
+  _touchHandler(touchData) {
+    var x = (touchData.coordinates[0] - this.soloistView.offsetLeft + window.scrollX) / this.soloistView.offsetWidth;
+    var y = (touchData.coordinates[1] - this.soloistView.offsetTop + window.scrollY) / this.soloistView.offsetHeight;
 
     client.send('performance:' + touchData.event, [x, y], touchData.timestamp); // TODO: might be a good idea to send the time in sever clock. (Requires sync module.)
   }
@@ -155,10 +222,10 @@ class Performance extends clientSide.Performance {
 
     let htmlContent = "<p><small>You are at position</small></p>" + "<div class='checkin-label'><span>" + this.checkin.label + "</span></div>";
     this.setCenteredViewContent(htmlContent);
-    this.__centeredViewContent.classList.add('info');
+    this._centeredViewContent.classList.add('info');
 
-    this.setup.display(this.setupDiv);
-    this.setup.addClassToPosition(this.setupDiv, client.index, 'me');
+    this._display();
+    this._addClassToPosition(this.checkin.index, 'me');
   }
 }
 
