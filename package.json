@@ -1,31 +1,31 @@
 {
-  "name": "wandering-sound",
+  "name": "soundfield",
   "authors": [
     "Sébastien Robaszkiewicz",
     "Norbert Schnell"
   ],
-  "description": "Wandering Sound is a collective performance based on Soundworks that enables players to play on other players' devices by moving their finger on the matrix represented on the screen of their phones.",
-  "version": "0.2.2",
+  "description": "TODO",
+  "version": "0.0.1",
   "scripts": {
-    "start": "node src/server/index.js"
+    "bundle": "node ./bin/scripts --bundle",
+    "start": "node dist/server/index.js",
+    "watch": "node ./bin/scripts --watch"
   },
   "dependencies": {
+    "babel-runtime": "^6.1.2",
+    "debug": "^2.1.2",
     "ejs": "^2.3.1",
     "express": "^4.8.6",
     "socket.io": "1.1.0",
-    "soundworks": "collective-soundworks/soundworks.git#0.5.0"
+    "soundworks": "collective-soundworks/soundworks.git#develop"
   },
   "devDependencies": {
-    "browserify": "~5.11.0",
-    "gulp": "~3.8.7",
-    "gulp-browserify": "^0.5.0",
-    "gulp-clean": "~0.3.1",
-    "gulp-es6-transpiler": "~1.0.0",
-    "gulp-nodemon": "~1.0.4",
-    "gulp-rename": "^1.2.0",
-    "gulp-sass": "^1.3.3",
-    "gulp-watch": "^2.0.0",
-    "require-dir": "^0.1.0",
-    "vinyl-transform": "^1.0.0"
+    "babel-core": "^6.1.2",
+    "babel-plugin-transform-runtime": "^6.1.2",
+    "babel-preset-es2015": "^6.1.2",
+    "fs-extra": "^0.26.2",
+    "node-sass": "^3.4.1",
+    "node-watch": "^0.3.4",
+    "watchify": "^3.6.0"
   }
 }

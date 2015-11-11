@@ -1,0 +1,39 @@
+'use strict';
+
+var _SoloistPerformance = require('./SoloistPerformance.js');
+
+var _SoloistPerformance2 = _interopRequireDefault(_SoloistPerformance);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// Import Soundworks modules (client side)
+var clientSide = require('soundworks')('client');
+var client = clientSide.client;
+var audioContext = clientSide.audioContext;
+
+// Import modules written for Soundfield
+
+// Initialize the client type
+client.init('soloist');
+
+// Where the magic happens
+window.addEventListener('load', function () {
+  // Instantiate the modules
+  var welcome = new clientSide.Dialog({
+    name: 'welcome',
+    text: '<p>Welcome to <b>Soundfield</b>.</p>\n    <p>Touch the screen to join!</p>',
+    activateAudio: true
+  });
+  var checkin = new clientSide.Checkin();
+  var loader = new clientSide.Loader({ files: files });
+  var performance = new _SoloistPerformance2.default(loader);
+
+  // Start the scenario and link the modules
+  client.start(function (serial, parallel) {
+    return serial(parallel(
+    // We launch in parallel the welcome module, the loader and the checkin…
+    welcome, loader, checkin), performance // … and when all of them are done, we launch the performance.
+    );
+  });
+});
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImluZGV4LmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7OztBQUNBLElBQU0sVUFBVSxHQUFHLE9BQU8sQ0FBQyxZQUFZLENBQUMsQ0FBQyxRQUFRLENBQUMsQ0FBQztBQUNuRCxJQUFNLE1BQU0sR0FBRyxVQUFVLENBQUMsTUFBTSxDQUFDO0FBQ2pDLElBQU0sWUFBWSxHQUFHLFVBQVUsQ0FBQyxZQUFZOzs7QUFBQzs7QUFNN0MsTUFBTSxDQUFDLElBQUksQ0FBQyxTQUFTLENBQUM7OztBQUFDLEFBR3ZCLE1BQU0sQ0FBQyxnQkFBZ0IsQ0FBQyxNQUFNLEVBQUUsWUFBTTs7QUFFcEMsTUFBTSxPQUFPLEdBQUcsSUFBSSxVQUFVLENBQUMsTUFBTSxDQUFDO0FBQ3BDLFFBQUksRUFBRSxTQUFTO0FBQ2YsUUFBSSw4RUFDNkI7QUFDakMsaUJBQWEsRUFBRSxJQUFJO0dBQ3BCLENBQUMsQ0FBQztBQUNILE1BQU0sT0FBTyxHQUFHLElBQUksVUFBVSxDQUFDLE9BQU8sRUFBRSxDQUFDO0FBQ3pDLE1BQU0sTUFBTSxHQUFHLElBQUksVUFBVSxDQUFDLE1BQU0sQ0FBQyxFQUFFLEtBQUssRUFBRSxLQUFLLEVBQUUsQ0FBQyxDQUFDO0FBQ3ZELE1BQU0sV0FBVyxHQUFHLGlDQUF1QixNQUFNLENBQUM7OztBQUFDLEFBR25ELFFBQU0sQ0FBQyxLQUFLLENBQUMsVUFBQyxNQUFNLEVBQUUsUUFBUTtXQUM1QixNQUFNLENBQ0osUUFBUTs7QUFFTixXQUFPLEVBQ1AsTUFBTSxFQUNOLE9BQU8sQ0FDUixFQUNEO0FBQVcsS0FDWjtHQUFBLENBQ0YsQ0FBQztDQUNILENBQUMsQ0FBQyIsImZpbGUiOiJpbmRleC5qcyIsInNvdXJjZXNDb250ZW50IjpbIi8vIEltcG9ydCBTb3VuZHdvcmtzIG1vZHVsZXMgKGNsaWVudCBzaWRlKVxuY29uc3QgY2xpZW50U2lkZSA9IHJlcXVpcmUoJ3NvdW5kd29ya3MnKSgnY2xpZW50Jyk7XG5jb25zdCBjbGllbnQgPSBjbGllbnRTaWRlLmNsaWVudDtcbmNvbnN0IGF1ZGlvQ29udGV4dCA9IGNsaWVudFNpZGUuYXVkaW9Db250ZXh0O1xuXG4vLyBJbXBvcnQgbW9kdWxlcyB3cml0dGVuIGZvciBTb3VuZGZpZWxkXG5pbXBvcnQgU29sb2lzdFBlcmZvcm1hbmNlIGZyb20gJy4vU29sb2lzdFBlcmZvcm1hbmNlLmpzJztcblxuLy8gSW5pdGlhbGl6ZSB0aGUgY2xpZW50IHR5cGVcbmNsaWVudC5pbml0KCdzb2xvaXN0Jyk7XG5cbi8vIFdoZXJlIHRoZSBtYWdpYyBoYXBwZW5zXG53aW5kb3cuYWRkRXZlbnRMaXN0ZW5lcignbG9hZCcsICgpID0+IHtcbiAgLy8gSW5zdGFudGlhdGUgdGhlIG1vZHVsZXNcbiAgY29uc3Qgd2VsY29tZSA9IG5ldyBjbGllbnRTaWRlLkRpYWxvZyh7XG4gICAgbmFtZTogJ3dlbGNvbWUnLFxuICAgIHRleHQ6IGA8cD5XZWxjb21lIHRvIDxiPlNvdW5kZmllbGQ8L2I+LjwvcD5cbiAgICA8cD5Ub3VjaCB0aGUgc2NyZWVuIHRvIGpvaW4hPC9wPmAsXG4gICAgYWN0aXZhdGVBdWRpbzogdHJ1ZVxuICB9KTtcbiAgY29uc3QgY2hlY2tpbiA9IG5ldyBjbGllbnRTaWRlLkNoZWNraW4oKTtcbiAgY29uc3QgbG9hZGVyID0gbmV3IGNsaWVudFNpZGUuTG9hZGVyKHsgZmlsZXM6IGZpbGVzwqB9KTtcbiAgY29uc3QgcGVyZm9ybWFuY2UgPSBuZXcgU29sb2lzdFBlcmZvcm1hbmNlKGxvYWRlcik7XG5cbiAgLy8gU3RhcnQgdGhlIHNjZW5hcmlvIGFuZCBsaW5rIHRoZSBtb2R1bGVzXG4gIGNsaWVudC5zdGFydCgoc2VyaWFsLCBwYXJhbGxlbCkgPT5cbiAgICBzZXJpYWwoXG4gICAgICBwYXJhbGxlbChcbiAgICAgICAgLy8gV2UgbGF1bmNoIGluIHBhcmFsbGVsIHRoZSB3ZWxjb21lIG1vZHVsZSwgdGhlIGxvYWRlciBhbmQgdGhlIGNoZWNraW7igKZcbiAgICAgICAgd2VsY29tZSxcbiAgICAgICAgbG9hZGVyLFxuICAgICAgICBjaGVja2luXG4gICAgICApLFxuICAgICAgcGVyZm9ybWFuY2UgLy8g4oCmIGFuZCB3aGVuIGFsbCBvZiB0aGVtIGFyZSBkb25lLCB3ZSBsYXVuY2ggdGhlIHBlcmZvcm1hbmNlLlxuICAgIClcbiAgKTtcbn0pO1xuIl19
