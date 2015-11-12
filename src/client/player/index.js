@@ -15,21 +15,22 @@ window.addEventListener('load', () => {
   const welcome = new clientSide.Dialog({
     name: 'welcome',
     text: `<p>Welcome to <b>Soundfield</b>.</p>
-    <p>Touch the screen to join!</p>`,
+           <p>Touch the screen to join!</p>`,
     activateAudio: true
   });
-  const checkin = new clientSide.Checkin();
+  const setup = new clientSide.Setup();
+  const space = new clientSide.Space();
+  const locator = new clientSide.Locator({ setup: setup, space: space });
   const performance = new PlayerPerformance();
 
-  // Start the scenario and link the modules
+  // Start the scenario
   client.start((serial, parallel) =>
     serial(
       parallel(
-        // We launch in parallel the welcome module, the loader and the checkin…
         welcome,
-        checkin
+        serial(setup, locator)
       ),
-      performance // … and when all of them are done, we launch the performance.
+      performance
     )
   );
 });

@@ -110,10 +110,10 @@ export default class SoloistPerformance extends serverSide.Performance {
     super.enter(soloist);
 
     // Remove client message listeners
-    soloist.removeListener('soloist:touchstart', this._onTouchStart);
-    soloist.removeListener('soloist:touchmove', this._onTouchMove);
-    soloist.removeListener('soloist:touchendorcancel',
-                           this._onTouchEndOrCancel);
+    // soloist.removeListener('soloist:touchstart', this._onTouchStart);
+    // soloist.removeListener('soloist:touchmove', this._onTouchMove);
+    // soloist.removeListener('soloist:touchendorcancel',
+    //                        this._onTouchEndOrCancel);
   }
 
   _calculateDistance() {
@@ -188,6 +188,8 @@ export default class SoloistPerformance extends serverSide.Performance {
   }
 
   _onTouchMove(touch) {
+    console.log('touch move', touch.coordinates);
+
     // If the touch is not in the dictionary already (may happen if the finger
     // slides from the edge of the touchscreen)
     if (!this._touches[touch.id]) {

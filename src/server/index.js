@@ -15,7 +15,7 @@ const setup = new serverSide.Setup();
 setup.generate('surface', { height: 1, width: 1 });
 const locator = new serverSide.Locator({ setup: setup });
 const playerPerformance = new PlayerPerformance();
-const soloistPerformance = new SoloistPerformance();
+const soloistPerformance = new SoloistPerformance(playerPerformance);
 
 // Launch server
 const app = express();
@@ -24,4 +24,4 @@ server.start(app, dir, process.env.PORT || 3000);
 
 // Map modules to client types
 server.map('player', setup, locator, playerPerformance);
-server.map('soloist', soloistPerformance);
+server.map('soloist', setup, soloistPerformance);

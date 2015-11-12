@@ -210,3 +210,19 @@ h1, h2, h3, h4, h5, h6 {
   background-color: white;
   height: 10px;
   width: 0%; }
+
+.touchsurface {
+  height: 100%;
+  position: absolute;
+  width: 100%;
+  z-index: 100; }
+
+.finger {
+  background: rgba(255, 0, 0, 0.5);
+  cursor: pointer;
+  position: absolute;
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  -ms-border-radius: 50%;
+  -o-border-radius: 50%;
+  border-radius: 50%; }

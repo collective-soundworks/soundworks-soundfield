@@ -5,17 +5,13 @@
 .setup {
   position: relative;
 
-  .tile {
+  .position {
     background-color: rgba($white, 0.1);
     border-radius: 50%;
     position: absolute;
 
     &.player {
       background-color: $belize-hole;
-    }
-
-    &.soloist, &.me {
-      background-color: $pomegranate;
     }
   }
 }

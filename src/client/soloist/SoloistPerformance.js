@@ -19,10 +19,35 @@ const fingerRadius = 0.1;
  */
 const timeoutLength = 8;
 
+// Helper functions
+function createSpaceDiv(view) {
+  let spaceDiv = document.createElement('div');
+  spaceDiv.setAttribute('id', 'setup');
+
+  let spaceTextDiv = document.createElement('div');
+  spaceTextDiv.innerHTML = 'Move your finger on screen';
+  spaceTextDiv.classList.add('centered-content');
+
+  let surface = document.createElement('div');
+  surface.setAttribute('id', 'touchsurface');
+  surface.classList.add('touchsurface');
+
+  spaceDiv.appendChild(surface);
+  spaceDiv.appendChild(spaceTextDiv);
+  view.appendChild(spaceDiv);
+
+  return {
+    spaceDiv: spaceDiv,
+    surface: surface
+  }
+}
+
 // SoloistPerformance class
 export default class SoloistPerformance extends clientSide.Performance {
-  constructor(options = {}) {
+  constructor(setup, space, options = {}) {
     super(options);
+
+    let dom = createSpaceDiv(this.view);
 
     /**
      * Dictionary of the DOM elements that represent a finger on screen.
@@ -39,16 +64,28 @@ export default class SoloistPerformance extends clientSide.Performance {
     this._fingerDivTimeouts = {};
 
     /**
+     * Setup.
+     * @type {Space}
+     */
+    this._setup = setup;
+
+    /**
      * Space.
      * @type {Space}
      */
-    this._space = null;
+    this._space = space;
+
+    /**
+     * `div` to represent the Space visualization.
+     * @type {DOMElement}
+     */
+    this._spaceDiv = dom.spaceDiv;
 
     /**
      * Touch surface.
      * @type {DOMElement}
      */
-    this._surface = null;
+    this._surface = dom.surface;
 
     /**
      * Dictionary of the current touches (fingers) on screen.
@@ -56,6 +93,13 @@ export default class SoloistPerformance extends clientSide.Performance {
      * @type {Object}
      */
     this._touches = {};
+
+    // Method bindings
+    this._onWindowResize = this._onWindowResize.bind(this);
+    this._onTouch = this._onTouch.bind(this);
+    this._onPlayerAdd = this._onPlayerAdd.bind(this);
+    this._onPlayerList = this._onPlayerList.bind(this);
+    this._onPlayerRemove = this._onPlayerRemove.bind(this);
   }
 
   /**
@@ -65,7 +109,7 @@ export default class SoloistPerformance extends clientSide.Performance {
    * pixels.
    */
   get _pxRatio() {
-    return Math.min(this._surface.offsetHeight, this._surface.offsetWidth);
+    return Math.min(this._spaceDiv.offsetHeight, this._spaceDiv.offsetWidth);
   }
 
   /**
@@ -80,23 +124,23 @@ export default class SoloistPerformance extends clientSide.Performance {
   start() {
     super.start();
 
+    // Display the space visualization in the view and adapt the size
+    this._space.display(this._setup, this._spaceDiv, { transform: 'rotate180' });
+    this._onWindowResize();
+
     // Setup listeners for player connections / disconnections
     client.receive('performance:playerList', this._onPlayerList);
-    client.receive('performance:addPlayer', this._onAddPlayer);
-    client.receive('performance:removePlayer', this._onRemovePlayer);
+    client.receive('performance:playerAdd', this._onPlayer);
+    client.receive('performance:playerRemove', this._onRemovePlayer);
 
     // Setup window resize listener
-    window.addEventListener('resize', this._onResize);
+    window.addEventListener('resize', this._onWindowResize);
 
     // Setup touch event listeners
-    this._surface.addListener('touchstart', this._onTouch);
-    this._surface.addListener('touchmove', this._onTouch);
-    this._surface.addListener('touchend', this._onTouch);
-    this._surface.addListener('touchcancel', this._onTouch);
-
-    // Display the space visualization in the view and adapt the size
-    this._space.display(this._surface, { transform: 'rotate180' });
-    this._onResize();
+    this._surface.addEventListener('touchstart', this._onTouch);
+    this._surface.addEventListener('touchmove', this._onTouch);
+    this._surface.addEventListener('touchend', this._onTouch);
+    this._surface.addEventListener('touchcancel', this._onTouch);
   }
 
   /**
@@ -113,17 +157,17 @@ export default class SoloistPerformance extends clientSide.Performance {
 
     // Remove listeners for player connections / disconnections
     client.removeListener('performance:playerList', this._onPlayerList);
-    client.removeListener('performance:addPlayer', this._onAddPlayer);
-    client.removeListener('performance:removePlayer', this._onRemovePlayer);
+    client.removeListener('performance:playerAdd', this._onPlayerAdd);
+    client.removeListener('performance:playerRemove', this._onPlayerRemove);
 
     // Remove window resize listener
     window.removeEventListener('resize', this._onWindowResize);
 
     // Remove touch event listeners
-    this._surface.removeListener('touchstart', this._onTouch);
-    this._surface.removeListener('touchmove', this._onTouch);
-    this._surface.removeListener('touchend', this._onTouch);
-    this._surface.removeListener('touchcancel', this._onTouch);
+    this._surface.removeEventListener('touchstart', this._onTouch);
+    this._surface.removeEventListener('touchmove', this._onTouch);
+    this._surface.removeEventListener('touchend', this._onTouch);
+    this._surface.removeEventListener('touchcancel', this._onTouch);
 
     // Remove the space visualization from the view
     this.view.innerHTML = '';
@@ -176,11 +220,11 @@ export default class SoloistPerformance extends clientSide.Performance {
       // (We multiply by -1 because the surface is rotated by 180° on the
       // soloist display)
       let x = -(coordinates[0] -
-                this._surface.offsetLeft -
-                this.setup.svgOffsetLeft ) / this.setup.svgWidth;
+                this._spaceDiv.offsetLeft -
+                this._setup.svgOffsetLeft ) / this._setup.svgWidth;
       let y = -(coordinates[1] -
-                this._surface.offsetTop -
-                this.setup.svgOffsetTop) / this.setup.svgHeight;
+                this._spaceDiv.offsetTop -
+                this._setup.svgOffsetTop) / this._setup.svgHeight;
 
       // Depending on the event type…
       switch (type) {
@@ -242,11 +286,11 @@ export default class SoloistPerformance extends clientSide.Performance {
     const width = window.innerWidth;
 
     if (width > height) {
-      this._surface.style.height = `${height}px`;
-      this._surface.style.width = `${height}px`;
+      this._spaceDiv.style.height = `${height}px`;
+      this._spaceDiv.style.width = `${height}px`;
     } else {
-      this._surface.style.height = `${width}px`;
-      this._surface.style.width = `${width}px`;
+      this._spaceDiv.style.height = `${width}px`;
+      this._spaceDiv.style.width = `${width}px`;
     }
 
     this._space.resize();
@@ -276,7 +320,7 @@ export default class SoloistPerformance extends clientSide.Performance {
     fingerDiv.style.top = `${yOffset}px`;
 
     this._fingerDivs[id] = fingerDiv;
-    this._surface.insertBefore(fingerDiv, this.setupDiv.firstChild.nextSibling);
+    this._spaceDiv.insertBefore(fingerDiv, this._spaceDiv.firstChild.nextSibling);
 
     // Timeout
     this._fingerDivTimeouts[id] = setTimeout(() => {
@@ -299,9 +343,9 @@ export default class SoloistPerformance extends clientSide.Performance {
     const yOffset = coordinates[1] - radius;
 
     // Move the finger `div`
-    let soundDiv = this._soundDivs[id];
-    soundDiv.style.left = `${xOffset}px`;
-    soundDiv.style.top = `${yOffset}px`;
+    let fingerDiv = this._fingerDivs[id];
+    fingerDiv.style.left = `${xOffset}px`;
+    fingerDiv.style.top = `${yOffset}px`;
 
     // Timeout
     clearTimeout(this._fingerDivTimeouts[id]);
@@ -316,7 +360,7 @@ export default class SoloistPerformance extends clientSide.Performance {
    */
   _removeFingerDiv(id) {
     // Remove the finger `div from the DOM and the dictionary
-    this._surface.removeChild(this._fingerDivs[id]);
+    this._spaceDiv.removeChild(this._fingerDivs[id]);
     delete this._fingerDivs[id];
 
     // Timeout

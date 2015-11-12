@@ -17,7 +17,7 @@
     "ejs": "^2.3.1",
     "express": "^4.8.6",
     "socket.io": "1.1.0",
-    "soundworks": "collective-soundworks/soundworks.git#develop"
+    "soundworks": "collective-soundworks/soundworks.git#soundfield"
   },
   "devDependencies": {
     "babel": "^5.8.34",

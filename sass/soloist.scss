@@ -10,3 +10,21 @@
 
 // Your own partials if needed
 // @import 'performance'
+
+.touchsurface {
+  height: 100%;
+  position: absolute;
+  width: 100%;
+  z-index: 100;
+}
+
+.finger {
+  background: rgba(255, 0, 0, 0.5);
+  cursor: pointer;
+  position: absolute;
+  -webkit-border-radius: 50%;
+     -moz-border-radius: 50%;
+      -ms-border-radius: 50%;
+       -o-border-radius: 50%;
+          border-radius: 50%;
+}

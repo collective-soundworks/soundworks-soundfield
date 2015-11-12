@@ -181,32 +181,76 @@ h1, h2, h3, h4, h5, h6 {
   visibility: hidden; }
 
 /* =======================================================
- * CHECKIN
+ * LOCATOR
  * ======================================================= */
-.checkin-label {
-  display: block;
-  font-size: 3em;
-  font-weight: 700;
-  height: 2em;
-  line-height: 2em;
-  margin: 0 auto;
-  text-align: center;
-  width: 2em; }
-
-.checkin-label.circled {
+.locator .surface {
   background-color: #2980b9;
-  border-radius: 50%;
-  margin: 0 auto 0.5em; }
+  position: relative;
+  overflow: hidden; }
+
+.locator .position {
+  background: rgba(255, 0, 0, 0.5);
+  position: absolute;
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  -ms-border-radius: 50%;
+  -o-border-radius: 50%;
+  border-radius: 50%; }
+
+.locator .btn {
+  background: none;
+  border-radius: 6rem;
+  border: 1px solid #fff;
+  cursor: pointer;
+  display: block;
+  font-weight: 100;
+  font-size: 2rem;
+  outline: none;
+  overflow: hidden;
+  padding: 0.4rem 1rem 0.3rem;
+  -webkit-tap-highlight-color: transparent;
+  text-align: center;
+  text-transform: uppercase;
+  -webkit-transition: all 0.3s;
+  -moz-transition: all 0.3s;
+  -ms-transition: all 0.3s;
+  -o-transition: all 0.3s;
+  transition: all 0.3s;
+  margin: 0 10px; }
+
+.locator .btn.selected {
+  color: #000000;
+  background-color: white; }
+
+.locator .btn.disabled {
+  color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.2); }
+
+.locator .message p {
+  text-align: center; }
+
+.locator.landscape .surface, .locator.landscape .message {
+  float: left; }
+
+.locator.landscape .message p {
+  padding: 70px 16px; }
+
+.locator.portrait .surface, .locator.portrait .message {
+  float: none; }
+
+.locator.portrait .message p {
+  padding: 8px 16px; }
+  .locator.portrait .message p small {
+    font-size: 1.1rem; }
 
 /* =======================================================
- * LOADER
+ * SETUP
  * ======================================================= */
-.loader .progress-wrap {
-  border: solid 3px white;
-  border-radius: 8px;
-  margin: 0.75em auto; }
-
-.loader .progress-bar {
-  background-color: white;
-  height: 10px;
-  width: 0%; }
+.setup {
+  position: relative; }
+  .setup .position {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    position: absolute; }
+    .setup .position.player {
+      background-color: #2980b9; }
