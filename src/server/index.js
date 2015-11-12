@@ -15,7 +15,7 @@ const setup = new serverSide.Setup();
 setup.generate('surface', { height: 1, width: 1 });
 const locator = new serverSide.Locator({ setup: setup });
 const playerPerformance = new PlayerPerformance();
-const soloistPerformance = new SoloistPerformance(playerPerformance);
+const soloistPerformance = new SoloistPerformance(playerPerformance, setup);
 
 // Launch server
 const app = express();

@@ -41,7 +41,7 @@ function getInfo(client) {
 
 // SoloistPerformance class
 export default class SoloistPerformance extends serverSide.Performance {
-  constructor(playerPerformance, options = {}) {
+  constructor(playerPerformance, setup, options = {}) {
     super(options);
 
     /**
@@ -49,6 +49,12 @@ export default class SoloistPerformance extends serverSide.Performance {
      * @type {Performance}
      */
     this._playerPerformance = playerPerformance;
+
+    /**
+     * Setup module.
+     * @type {Setup}
+     */
+    this._setup = setup;
 
     /**
      * Dictionary of the current touches (fingers) on screen.
@@ -68,7 +74,7 @@ export default class SoloistPerformance extends serverSide.Performance {
    * @return {Number} Width / height ratio of the space.
    */
   get _widthHeightRatio() {
-    return this._space.width / this._space.height;
+    return this._setup.width / this._setup.height;
   }
 
   /**
@@ -97,7 +103,7 @@ export default class SoloistPerformance extends serverSide.Performance {
     super.enter(soloist);
 
     // Send list of players to the soloist
-    const playerList = this._playerPerformance.clients.map((c) => this._getInfo(c));
+    const playerList = this._playerPerformance.clients.map((c) => getInfo(c));
     soloist.send('performance:playerList', playerList);
 
     // Setup client message listeners
@@ -116,7 +122,7 @@ export default class SoloistPerformance extends serverSide.Performance {
     //                        this._onTouchEndOrCancel);
   }
 
-  _calculateDistance() {
+  _getDistance(a, b) {
     const x = (a[0] - b[0]) * this._widthNormalisation;
     const x2 = x * x;
 
@@ -131,29 +137,28 @@ export default class SoloistPerformance extends serverSide.Performance {
     if (Object.keys(this._touches).length > 0) {
       // For each player in the performance
       for (let player of this._playerPerformance.clients) {
-        let playerCoordinates = player.coordinates;
         let distances = [];
 
         // Calculate the distance from the player to each touch (finger)
         for (let id in this._touches) {
-          distances.push(this._calculateDistance(playerCoordinates,
-                                                 this._touches[id].coordinates));
+          distances.push(this._getDistance(player.coordinates,
+                                           this._touches[id].coordinates));
         }
 
         // Get minimum distance among all touches (fingers)
         let d = getMinOfArray(distances);
 
         // If the player is within range for playing sound
-        if (d < 1 && !player.modules.performance.playing[soloistIndex]) {
+        if (d < 1 && !player.modules.performance.isPlaying) {
           // Send message to the player
-          player.send('player:play', true);
+          player.send('player:play');
           // Update the player status
           player.modules.performance.isPlaying = true;
         }
         // Otherwise, and if the player is currently playing sound
-        else if (d === 1 && player.modules.performance.playing) {
+        else if (d === 1 && player.modules.performance.isPlaying) {
           // Send message to the player
-          player.send('player:play', false);
+          player.send('player:mute');
           // Update the player status
           player.modules.performance.isPlaying = false;
         }
@@ -166,7 +171,7 @@ export default class SoloistPerformance extends serverSide.Performance {
         // If the player is currently playing sound
         if (player.modules.performance.isPlaying) {
           // Send message to the player
-          player.send('player:play', false);
+          player.send('player:mute');
           // Update the player status
           player.modules.performance.isPlaying = false;
         }

@@ -130,8 +130,8 @@ export default class SoloistPerformance extends clientSide.Performance {
 
     // Setup listeners for player connections / disconnections
     client.receive('performance:playerList', this._onPlayerList);
-    client.receive('performance:playerAdd', this._onPlayer);
-    client.receive('performance:playerRemove', this._onRemovePlayer);
+    client.receive('performance:playerAdd', this._onPlayerAdd);
+    client.receive('performance:playerRemove', this._onPlayerRemove);
 
     // Setup window resize listener
     window.addEventListener('resize', this._onWindowResize);
@@ -211,20 +211,22 @@ export default class SoloistPerformance extends clientSide.Performance {
 
     // Iterate through the changedTouches array
     for (let i = 0; i < changedTouches.length; i++) {
+      console.log(this._spaceDiv.offsetLeft, this._space.svgOffsetLeft, this._space.svgWidth);
       // Retrieve touch data
       let coordinates = [changedTouches[i].clientX, changedTouches[i].clientY];
       let identifier = changedTouches[i].identifier;
-      let touch = { id: identifier, coordinates: coordinates };
 
       // Calculate normalized touch position in the surface's referential
-      // (We multiply by -1 because the surface is rotated by 180° on the
+      // (We substract to 1 because the surface is rotated by 180° on the
       // soloist display)
-      let x = -(coordinates[0] -
-                this._spaceDiv.offsetLeft -
-                this._setup.svgOffsetLeft ) / this._setup.svgWidth;
-      let y = -(coordinates[1] -
-                this._spaceDiv.offsetTop -
-                this._setup.svgOffsetTop) / this._setup.svgHeight;
+      let x = 1 - (coordinates[0] -
+                   this._spaceDiv.offsetLeft -
+                   this._space.svgOffsetLeft ) / this._space.svgWidth;
+      let y = 1 - (coordinates[1] -
+                   this._spaceDiv.offsetTop -
+                   this._space.svgOffsetTop) / this._space.svgHeight;
+
+      let touchNorm = { id: identifier, coordinates: [x, y] };
 
       // Depending on the event type…
       switch (type) {
@@ -234,7 +236,7 @@ export default class SoloistPerformance extends clientSide.Performance {
         case 'touchstart':
           this._touches[identifier] = [x, y];
           this._createFingerDiv(identifier, coordinates);
-          client.send('soloist:performance:touchstart', touch);
+          client.send('soloist:performance:touchstart', touchNorm);
           break;
 
         // `'touchmove'`:
@@ -249,7 +251,7 @@ export default class SoloistPerformance extends clientSide.Performance {
             this._moveFingerDiv(identifier, coordinates);
           else
             this._createFingerDiv(identifier, coordinates);
-          client.send('soloist:touchmove', touch);
+          client.send('soloist:touchmove', touchNorm);
           break;
         }
 
@@ -260,7 +262,7 @@ export default class SoloistPerformance extends clientSide.Performance {
           delete this._touches[identifier];
           if (this._fingerDivs[identifier])
             this._removeFingerDiv(identifier);
-          client.send('soloist:touchendorcancel', touch);
+          client.send('soloist:touchendorcancel', touchNorm);
           break;
         }
 
@@ -269,7 +271,7 @@ export default class SoloistPerformance extends clientSide.Performance {
           delete this._touches[identifier];
           if (this._fingerDivs[identifier])
             this._removeFingerDiv(identifier);
-          client.send('soloist:touchendorcancel', touch);
+          client.send('soloist:touchendorcancel', touchNorm);
           break;
         }
       }
