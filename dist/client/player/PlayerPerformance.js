@@ -1,60 +1,47 @@
+// Import Soundworks modules (client side)
 'use strict';
 
-Object.defineProperty(exports, "__esModule", {
+Object.defineProperty(exports, '__esModule', {
   value: true
 });
 
-var _getPrototypeOf = require('babel-runtime/core-js/object/get-prototype-of');
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
+var _get = function get(_x2, _x3, _x4) { var _again = true; _function: while (_again) { var object = _x2, property = _x3, receiver = _x4; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x2 = parent; _x3 = property; _x4 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-var _createClass2 = require('babel-runtime/helpers/createClass');
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var _createClass3 = _interopRequireDefault(_createClass2);
+var _soundworksClient = require('soundworks/client');
 
-var _possibleConstructorReturn2 = require('babel-runtime/helpers/possibleConstructorReturn');
+var _soundworksClient2 = _interopRequireDefault(_soundworksClient);
 
-var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
-
-var _get2 = require('babel-runtime/helpers/get');
-
-var _get3 = _interopRequireDefault(_get2);
-
-var _inherits2 = require('babel-runtime/helpers/inherits');
-
-var _inherits3 = _interopRequireDefault(_inherits2);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-// Import Soundworks modules (client side)
-var clientSide = require('soundworks/client');
-var client = clientSide.client;
+var client = _soundworksClient2['default'].client;
 
 // PlayerPerformance class
 
-var PlayerPerformance = (function (_clientSide$Performan) {
-  (0, _inherits3.default)(PlayerPerformance, _clientSide$Performan);
+var PlayerPerformance = (function (_clientSide$Performance) {
+  _inherits(PlayerPerformance, _clientSide$Performance);
 
   function PlayerPerformance(loader) {
-    (0, _classCallCheck3.default)(this, PlayerPerformance);
     var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
-    var _this2 = (0, _possibleConstructorReturn3.default)(this, (0, _getPrototypeOf2.default)(PlayerPerformance).call(this, options));
+    _classCallCheck(this, PlayerPerformance);
 
-    _this2.loader = loader; // the loader module
-    return _this2;
+    _get(Object.getPrototypeOf(PlayerPerformance.prototype), 'constructor', this).call(this, options);
+
+    this.loader = loader; // the loader module
   }
 
-  (0, _createClass3.default)(PlayerPerformance, [{
+  _createClass(PlayerPerformance, [{
     key: 'start',
     value: function start() {
       var _this = this;
 
-      (0, _get3.default)((0, _getPrototypeOf2.default)(PlayerPerformance.prototype), 'start', this).call(this); // don't forget this
+      _get(Object.getPrototypeOf(PlayerPerformance.prototype), 'start', this).call(this); // don't forget this
 
       // Play the welcome sound immediately
       var src = audioContext.createBufferSource();
@@ -80,8 +67,9 @@ var PlayerPerformance = (function (_clientSide$Performan) {
       // this.done();
     }
   }]);
-  return PlayerPerformance;
-})(clientSide.Performance);
 
-exports.default = PlayerPerformance;
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIlBsYXllclBlcmZvcm1hbmNlLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztBQUNBLElBQU0sVUFBVSxHQUFHLE9BQU8sQ0FBQyxtQkFBbUIsQ0FBQyxDQUFDO0FBQ2hELElBQU0sTUFBTSxHQUFHLFVBQVUsQ0FBQyxNQUFNOzs7QUFBQztJQUdaLGlCQUFpQjswQkFBakIsaUJBQWlCOztBQUNwQyxXQURtQixpQkFBaUIsQ0FDeEIsTUFBTSxFQUFnQjt3Q0FEZixpQkFBaUI7UUFDaEIsT0FBTyx5REFBRyxFQUFFOzs4RkFEYixpQkFBaUIsYUFFNUIsT0FBTzs7QUFFYixXQUFLLE1BQU0sR0FBRyxNQUFNO0FBQUM7R0FDdEI7OzZCQUxrQixpQkFBaUI7OzRCQU81Qjs7O0FBQ04sdURBUmlCLGlCQUFpQjs7O0FBUXBCLEFBR2QsVUFBSSxHQUFHLEdBQUcsWUFBWSxDQUFDLGtCQUFrQixFQUFFLENBQUM7QUFDNUMsU0FBRyxDQUFDLE1BQU0sR0FBRyxJQUFJLENBQUMsTUFBTSxDQUFDLE9BQU8sQ0FBQyxDQUFDLENBQUM7QUFBQyxBQUNwQyxTQUFHLENBQUMsT0FBTyxDQUFDLFlBQVksQ0FBQyxXQUFXLENBQUMsQ0FBQztBQUN0QyxTQUFHLENBQUMsS0FBSyxDQUFDLFlBQVksQ0FBQyxXQUFXLENBQUMsQ0FBQzs7QUFFcEMsVUFBSSxDQUFDLHNCQUFzQixDQUFDLFdBQVcsQ0FBQzs7O0FBQUMsQUFHekMsWUFBTSxDQUFDLE9BQU8sQ0FBQyxrQkFBa0IsRUFBRSxZQUFNO0FBQ3ZDLFlBQUksR0FBRyxHQUFHLFlBQVksQ0FBQyxrQkFBa0IsRUFBRSxDQUFDO0FBQzVDLFdBQUcsQ0FBQyxNQUFNLEdBQUcsTUFBSyxNQUFNLENBQUMsT0FBTyxDQUFDLENBQUMsQ0FBQztBQUFDLEFBQ3BDLFdBQUcsQ0FBQyxPQUFPLENBQUMsWUFBWSxDQUFDLFdBQVcsQ0FBQyxDQUFDO0FBQ3RDLFdBQUcsQ0FBQyxLQUFLLENBQUMsWUFBWSxDQUFDLFdBQVcsQ0FBQyxDQUFDO09BQ3JDLENBQUM7Ozs7Ozs7O0FBQUMsS0FRSjs7U0FoQ2tCLGlCQUFpQjtHQUFTLFVBQVUsQ0FBQyxXQUFXOztrQkFBaEQsaUJBQWlCIiwiZmlsZSI6IlBsYXllclBlcmZvcm1hbmNlLmpzIiwic291cmNlc0NvbnRlbnQiOlsiLy8gSW1wb3J0IFNvdW5kd29ya3MgbW9kdWxlcyAoY2xpZW50IHNpZGUpXG5jb25zdCBjbGllbnRTaWRlID0gcmVxdWlyZSgnc291bmR3b3Jrcy9jbGllbnQnKTtcbmNvbnN0IGNsaWVudCA9IGNsaWVudFNpZGUuY2xpZW50O1xuXG4vLyBQbGF5ZXJQZXJmb3JtYW5jZSBjbGFzc1xuZXhwb3J0IGRlZmF1bHQgY2xhc3MgUGxheWVyUGVyZm9ybWFuY2UgZXh0ZW5kcyBjbGllbnRTaWRlLlBlcmZvcm1hbmNlIHtcbiAgY29uc3RydWN0b3IobG9hZGVyLCBvcHRpb25zID0ge30pIHtcbiAgICBzdXBlcihvcHRpb25zKTtcblxuICAgIHRoaXMubG9hZGVyID0gbG9hZGVyOyAvLyB0aGUgbG9hZGVyIG1vZHVsZVxuICB9XG5cbiAgc3RhcnQoKSB7XG4gICAgc3VwZXIuc3RhcnQoKTsgLy8gZG9uJ3QgZm9yZ2V0IHRoaXNcblxuICAgIC8vIFBsYXkgdGhlIHdlbGNvbWUgc291bmQgaW1tZWRpYXRlbHlcbiAgICBsZXQgc3JjID0gYXVkaW9Db250ZXh0LmNyZWF0ZUJ1ZmZlclNvdXJjZSgpO1xuICAgIHNyYy5idWZmZXIgPSB0aGlzLmxvYWRlci5idWZmZXJzWzBdOyAvLyBnZXQgdGhlIGZpcnN0IGF1ZGlvIGJ1ZmZlciBmcm9tIHRoZSBsb2FkZXJcbiAgICBzcmMuY29ubmVjdChhdWRpb0NvbnRleHQuZGVzdGluYXRpb24pO1xuICAgIHNyYy5zdGFydChhdWRpb0NvbnRleHQuY3VycmVudFRpbWUpO1xuXG4gICAgdGhpcy5zZXRDZW50ZXJlZFZpZXdDb250ZW50KCdMZXTigJlzIGdvIScpOyAvLyBkaXNwbGF5IHNvbWUgZmVlZGJhY2sgdGV4dCBpbiB0aGUgdmlld1xuXG4gICAgLy8gUGxheSBhbm90aGVyIHNvdW5kIHdoZW4gd2UgcmVjZWl2ZSB0aGUgJ3BsYXknIG1lc3NhZ2UgZnJvbSB0aGUgc2VydmVyXG4gICAgY2xpZW50LnJlY2VpdmUoJ3BlcmZvcm1hbmNlOnBsYXknLCAoKSA9PiB7XG4gICAgICBsZXQgc3JjID0gYXVkaW9Db250ZXh0LmNyZWF0ZUJ1ZmZlclNvdXJjZSgpO1xuICAgICAgc3JjLmJ1ZmZlciA9IHRoaXMubG9hZGVyLmJ1ZmZlcnNbMV07IC8vIGdldCB0aGUgc2Vjb25kIGF1ZGlvQnVmZmVyIGZyb20gdGhlIGxvYWRlclxuICAgICAgc3JjLmNvbm5lY3QoYXVkaW9Db250ZXh0LmRlc3RpbmF0aW9uKTtcbiAgICAgIHNyYy5zdGFydChhdWRpb0NvbnRleHQuY3VycmVudFRpbWUpO1xuICAgIH0pO1xuXG4gICAgLyogV2Ugd291bGQgdXN1YWxseSBjYWxsIHRoZSAnZG9uZScgbWV0aG9kIHdoZW4gdGhlIG1vZHVsZVxuICAgICAqIGNhbiBoYW5kIG92ZXIgdGhlIGNvbnRyb2wgdG8gc3Vic2VxdWVudCBtb2R1bGVzLFxuICAgICAqIGhvd2V2ZXIgc2luY2UgdGhlIHBlcmZvcm1hbmNlIGlzIHRoZSBsYXN0IG1vZHVsZSB0byBiZSBjYWxsZWRcbiAgICAgKiBpbiB0aGlzIHNjZW5hcmlvLCB3ZSBkb24ndCBuZWVkIGl0IGhlcmUuXG4gICAgICovXG4gICAgLy8gdGhpcy5kb25lKCk7XG4gIH1cbn1cbiJdfQ==
+  return PlayerPerformance;
+})(_soundworksClient2['default'].Performance);
+
+exports['default'] = PlayerPerformance;
+module.exports = exports['default'];

@@ -1,5 +1,5 @@
 // Import Soundworks library (server side)
-const serverSide = require('soundworks')('server');
+import serverSide from 'soundworks/server';
 const server = serverSide.server;
 
 // Helper function

@@ -1,5 +1,5 @@
 // Import Soundworks modules (client side)
-const clientSide = require('soundworks/client');
+import clientSide from 'soundworks/client';
 const client = clientSide.client;
 
 // PlayerPerformance class

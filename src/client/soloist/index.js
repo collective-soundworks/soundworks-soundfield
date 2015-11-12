@@ -1,5 +1,5 @@
 // Import Soundworks modules (client side)
-const clientSide = require('soundworks')('client');
+import clientSide from 'soundworks/client';
 const client = clientSide.client;
 const audioContext = clientSide.audioContext;
 
@@ -14,13 +14,12 @@ window.addEventListener('load', () => {
   // Instantiate the modules
   const welcome = new clientSide.Dialog({
     name: 'welcome',
-    text: `<p>Welcome to <b>Soundfield</b>.</p>
+    text: `<p>Welcome to <b>Soundfield solo</b>.</p>
     <p>Touch the screen to join!</p>`,
     activateAudio: true
   });
   const checkin = new clientSide.Checkin();
-  const loader = new clientSide.Loader({ files: files });
-  const performance = new SoloistPerformance(loader);
+  const performance = new SoloistPerformance();
 
   // Start the scenario and link the modules
   client.start((serial, parallel) =>
@@ -28,7 +27,6 @@ window.addEventListener('load', () => {
       parallel(
         // We launch in parallel the welcome module, the loader and the checkin…
         welcome,
-        loader,
         checkin
       ),
       performance // … and when all of them are done, we launch the performance.

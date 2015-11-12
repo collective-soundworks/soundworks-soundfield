@@ -3,7 +3,7 @@ const express = require('express');
 const path = require('path');
 
 // Import Soundworks modules (server side)
-const serverSide = require('soundworks')('server');
+import serverSide from 'soundworks/server';
 const server = serverSide.server;
 
 // Import modules written for Soundfield
@@ -19,7 +19,7 @@ const soloistPerformance = new SoloistPerformance();
 
 // Launch server
 const app = express();
-const dir = path.join(__dirname, '../../public');
+const dir = path.join(process.cwd(), 'public');
 server.start(app, dir, process.env.PORT || 3000);
 
 // Map modules to client types

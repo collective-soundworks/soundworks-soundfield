@@ -1,5 +1,5 @@
 // Import Soundworks modules (client side)
-const clientSide = require('soundworks')('client');
+import clientSide from 'soundworks/client';
 const client = clientSide.client;
 
 /**
@@ -20,7 +20,7 @@ const fingerRadius = 0.1;
 const timeoutLength = 8;
 
 // SoloistPerformance class
-export default class SoundfieldPerformance extends clientSide.Performance {
+export default class SoloistPerformance extends clientSide.Performance {
   constructor(options = {}) {
     super(options);
 

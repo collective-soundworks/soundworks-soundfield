@@ -1,31 +1,32 @@
+// Import external libraries
 'use strict';
 
-var _PlayerPerformance = require('./PlayerPerformance.js');
-
-var _PlayerPerformance2 = _interopRequireDefault(_PlayerPerformance);
-
-var _SoloistPerformance = require('./SoloistPerformance.js');
-
-var _SoloistPerformance2 = _interopRequireDefault(_SoloistPerformance);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-// Import external libraries
-var express = require('express');
-var path = require('path');
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 // Import Soundworks modules (server side)
-var serverSide = require('soundworks')('server');
-var server = serverSide.server;
+
+var _soundworksServer = require('soundworks/server');
+
+var _soundworksServer2 = _interopRequireDefault(_soundworksServer);
 
 // Import modules written for Soundfield
 
+var _PlayerPerformanceJs = require('./PlayerPerformance.js');
+
+var _PlayerPerformanceJs2 = _interopRequireDefault(_PlayerPerformanceJs);
+
+var _SoloistPerformanceJs = require('./SoloistPerformance.js');
+
+var _SoloistPerformanceJs2 = _interopRequireDefault(_SoloistPerformanceJs);
+
 // Instantiate the modules
-var setup = new serverSide.Setup();
+var express = require('express');
+var path = require('path');
+var server = _soundworksServer2['default'].server;var setup = new _soundworksServer2['default'].Setup();
 setup.generate('surface', { height: 1, width: 1 });
-var locator = new serverSide.Locator({ setup: setup });
-var playerPerformance = new _PlayerPerformance2.default();
-var soloistPerformance = new _SoloistPerformance2.default();
+var locator = new _soundworksServer2['default'].Locator({ setup: setup });
+var playerPerformance = new _PlayerPerformanceJs2['default']();
+var soloistPerformance = new _SoloistPerformanceJs2['default']();
 
 // Launch server
 var app = express();
@@ -35,4 +36,3 @@ server.start(app, dir, process.env.PORT || 3000);
 // Map modules to client types
 server.map('player', setup, locator, playerPerformance);
 server.map('soloist', soloistPerformance);
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImluZGV4LmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7QUFDQSxJQUFNLE9BQU8sR0FBRyxPQUFPLENBQUMsU0FBUyxDQUFDLENBQUM7QUFDbkMsSUFBTSxJQUFJLEdBQUcsT0FBTyxDQUFDLE1BQU0sQ0FBQzs7O0FBQUMsQUFHN0IsSUFBTSxVQUFVLEdBQUcsT0FBTyxDQUFDLFlBQVksQ0FBQyxDQUFDLFFBQVEsQ0FBQyxDQUFDO0FBQ25ELElBQU0sTUFBTSxHQUFHLFVBQVUsQ0FBQyxNQUFNOzs7QUFBQzs7QUFPakMsSUFBTSxLQUFLLEdBQUcsSUFBSSxVQUFVLENBQUMsS0FBSyxFQUFFLENBQUM7QUFDckMsS0FBSyxDQUFDLFFBQVEsQ0FBQyxTQUFTLEVBQUUsRUFBRSxNQUFNLEVBQUUsQ0FBQyxFQUFFLEtBQUssRUFBRSxDQUFDLEVBQUUsQ0FBQyxDQUFDO0FBQ25ELElBQU0sT0FBTyxHQUFHLElBQUksVUFBVSxDQUFDLE9BQU8sQ0FBQyxFQUFFLEtBQUssRUFBRSxLQUFLLEVBQUUsQ0FBQyxDQUFDO0FBQ3pELElBQU0saUJBQWlCLEdBQUcsaUNBQXVCLENBQUM7QUFDbEQsSUFBTSxrQkFBa0IsR0FBRyxrQ0FBd0I7OztBQUFDLEFBR3BELElBQU0sR0FBRyxHQUFHLE9BQU8sRUFBRSxDQUFDO0FBQ3RCLElBQU0sR0FBRyxHQUFHLElBQUksQ0FBQyxJQUFJLENBQUMsU0FBUyxFQUFFLGNBQWMsQ0FBQyxDQUFDO0FBQ2pELE1BQU0sQ0FBQyxLQUFLLENBQUMsR0FBRyxFQUFFLEdBQUcsRUFBRSxPQUFPLENBQUMsR0FBRyxDQUFDLElBQUksSUFBSSxJQUFJLENBQUM7OztBQUFDLEFBR2pELE1BQU0sQ0FBQyxHQUFHLENBQUMsUUFBUSxFQUFFLEtBQUssRUFBRSxPQUFPLEVBQUUsaUJBQWlCLENBQUMsQ0FBQztBQUN4RCxNQUFNLENBQUMsR0FBRyxDQUFDLFNBQVMsRUFBRSxrQkFBa0IsQ0FBQyxDQUFDIiwiZmlsZSI6ImluZGV4LmpzIiwic291cmNlc0NvbnRlbnQiOlsiLy8gSW1wb3J0IGV4dGVybmFsIGxpYnJhcmllc1xuY29uc3QgZXhwcmVzcyA9IHJlcXVpcmUoJ2V4cHJlc3MnKTtcbmNvbnN0IHBhdGggPSByZXF1aXJlKCdwYXRoJyk7XG5cbi8vIEltcG9ydCBTb3VuZHdvcmtzIG1vZHVsZXMgKHNlcnZlciBzaWRlKVxuY29uc3Qgc2VydmVyU2lkZSA9IHJlcXVpcmUoJ3NvdW5kd29ya3MnKSgnc2VydmVyJyk7XG5jb25zdCBzZXJ2ZXIgPSBzZXJ2ZXJTaWRlLnNlcnZlcjtcblxuLy8gSW1wb3J0IG1vZHVsZXMgd3JpdHRlbiBmb3IgU291bmRmaWVsZFxuaW1wb3J0IFBsYXllclBlcmZvcm1hbmNlIGZyb20gJy4vUGxheWVyUGVyZm9ybWFuY2UuanMnO1xuaW1wb3J0IFNvbG9pc3RQZXJmb3JtYW5jZSBmcm9tICcuL1NvbG9pc3RQZXJmb3JtYW5jZS5qcyc7XG5cbi8vIEluc3RhbnRpYXRlIHRoZSBtb2R1bGVzXG5jb25zdCBzZXR1cCA9IG5ldyBzZXJ2ZXJTaWRlLlNldHVwKCk7XG5zZXR1cC5nZW5lcmF0ZSgnc3VyZmFjZScsIHsgaGVpZ2h0OiAxLCB3aWR0aDogMSB9KTtcbmNvbnN0IGxvY2F0b3IgPSBuZXcgc2VydmVyU2lkZS5Mb2NhdG9yKHsgc2V0dXA6IHNldHVwIH0pO1xuY29uc3QgcGxheWVyUGVyZm9ybWFuY2UgPSBuZXcgUGxheWVyUGVyZm9ybWFuY2UoKTtcbmNvbnN0IHNvbG9pc3RQZXJmb3JtYW5jZSA9IG5ldyBTb2xvaXN0UGVyZm9ybWFuY2UoKTtcblxuLy8gTGF1bmNoIHNlcnZlclxuY29uc3QgYXBwID0gZXhwcmVzcygpO1xuY29uc3QgZGlyID0gcGF0aC5qb2luKF9fZGlybmFtZSwgJy4uLy4uL3B1YmxpYycpO1xuc2VydmVyLnN0YXJ0KGFwcCwgZGlyLCBwcm9jZXNzLmVudi5QT1JUIHx8IDMwMDApO1xuXG4vLyBNYXAgbW9kdWxlcyB0byBjbGllbnQgdHlwZXNcbnNlcnZlci5tYXAoJ3BsYXllcicsIHNldHVwLCBsb2NhdG9yLCBwbGF5ZXJQZXJmb3JtYW5jZSk7XG5zZXJ2ZXIubWFwKCdzb2xvaXN0Jywgc29sb2lzdFBlcmZvcm1hbmNlKTtcbiJdfQ==

@@ -27,17 +27,17 @@ ol, ul {
 @font-face {
   font-family: "Quicksand";
   font-weight: 100;
-  src: url("../fonts/Quicksand-Light.ttf") format('truetype'); }
+  src: url("../fonts/Quicksand-Light.ttf") format("truetype"); }
 
 @font-face {
   font-family: "Quicksand";
   font-weight: 400;
-  src: url("../fonts/Quicksand-Regular.ttf") format('truetype'); }
+  src: url("../fonts/Quicksand-Regular.ttf") format("truetype"); }
 
 @font-face {
   font-family: "Quicksand";
   font-weight: 700;
-  src: url("../fonts/Quicksand-Bold.ttf") format('truetype'); }
+  src: url("../fonts/Quicksand-Bold.ttf") format("truetype"); }
 
 /* =======================================================
  * COLORS
@@ -50,53 +50,43 @@ ol, ul {
 /* =======================================================
  * GENERAL
  * ======================================================= */
-@-webkit-keyframes soft-blink {
+@-webkit-keyframes $animation-name {
   0% {
     opacity: 1.0; }
-
   50% {
     opacity: 0.3; }
-
   100% {
     opacity: 1.0; } }
 
-@-moz-keyframes soft-blink {
+@-moz-keyframes $animation-name {
   0% {
     opacity: 1.0; }
-
   50% {
     opacity: 0.3; }
-
   100% {
     opacity: 1.0; } }
 
-@-ms-keyframes soft-blink {
+@-ms-keyframes $animation-name {
   0% {
     opacity: 1.0; }
-
   50% {
     opacity: 0.3; }
-
   100% {
     opacity: 1.0; } }
 
-@-o-keyframes soft-blink {
+@-o-keyframes $animation-name {
   0% {
     opacity: 1.0; }
-
   50% {
     opacity: 0.3; }
-
   100% {
     opacity: 1.0; } }
 
-@keyframes soft-blink {
+@keyframes $animation-name {
   0% {
     opacity: 1.0; }
-
   50% {
     opacity: 0.3; }
-
   100% {
     opacity: 1.0; } }
 
@@ -215,6 +205,7 @@ h1, h2, h3, h4, h5, h6 {
   border: solid 3px white;
   border-radius: 8px;
   margin: 0.75em auto; }
+
 .loader .progress-bar {
   background-color: white;
   height: 10px;
