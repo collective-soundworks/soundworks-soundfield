@@ -87,13 +87,6 @@ export default class SoloistPerformance extends clientSide.Performance {
      */
     this._surface = dom.surface;
 
-    /**
-     * Dictionary of the current touches (fingers) on screen.
-     * Keys are the touch identifiers retrived in the touch events.
-     * @type {Object}
-     */
-    this._touches = {};
-
     // Method bindings
     this._onWindowResize = this._onWindowResize.bind(this);
     this._onTouch = this._onTouch.bind(this);
@@ -216,9 +209,9 @@ export default class SoloistPerformance extends clientSide.Performance {
       let coordinates = [changedTouches[i].clientX, changedTouches[i].clientY];
       let identifier = changedTouches[i].identifier;
 
-      // Calculate normalized touch position in the surface's referential
-      // (We substract to 1 because the surface is rotated by 180° on the
-      // soloist display)
+      // Calculate normalized touch position in the space visualization's
+      // referential (we substract to 1 because the surface is rotated by 180°
+      // on the soloist display)
       let x = 1 - (coordinates[0] -
                    this._spaceDiv.offsetLeft -
                    this._space.svgOffsetLeft ) / this._space.svgWidth;
@@ -226,51 +219,49 @@ export default class SoloistPerformance extends clientSide.Performance {
                    this._spaceDiv.offsetTop -
                    this._space.svgOffsetTop) / this._space.svgHeight;
 
+      // Touch information with normalized coordinates
       let touchNorm = { id: identifier, coordinates: [x, y] };
 
       // Depending on the event type…
       switch (type) {
-        // `'touchstart'`:
-        // - add the touch coordinates to the dictionary `this._touches`
-        // - create a `div` under the finger
         case 'touchstart':
-          this._touches[identifier] = [x, y];
+          // Create a `div` under the finger
           this._createFingerDiv(identifier, coordinates);
-          client.send('soloist:performance:touchstart', touchNorm);
+
+          // Send message to the server
+          client.send('soloist:touchstart', touchNorm);
           break;
 
-        // `'touchmove'`:
-        // - add or update the touch coordinates to the dictionary
-        //     `this._touches`
-        // - move the `div` under the finger or create one if it doesn't exist
-        //   already (may happen if the finger slides from the edge of the
-        //   touchscreen)
         case 'touchmove': {
-          this._touches[identifier] = [x, y];
+          // Move the `div` under the finger or create one if it doesn't exist
+          // already (may happen if the finger slides from the edge of the
+          // touchscreen)
           if (this._fingerDivs[identifier])
             this._moveFingerDiv(identifier, coordinates);
           else
             this._createFingerDiv(identifier, coordinates);
+
+          // Send message to the server
           client.send('soloist:touchmove', touchNorm);
           break;
         }
 
-        // `'touchend'`:
-        // - delete the touch in the dictionary `this._touches`
-        // - remove the corresponding `div`
         case 'touchend': {
-          delete this._touches[identifier];
+          // Remove the finger div
           if (this._fingerDivs[identifier])
             this._removeFingerDiv(identifier);
+
+          // Send a message to the server
           client.send('soloist:touchendorcancel', touchNorm);
           break;
         }
 
-        // `'touchcancel'`: similar to `'touchend'`
         case 'touchcancel': {
-          delete this._touches[identifier];
+          // Remove the finger div
           if (this._fingerDivs[identifier])
             this._removeFingerDiv(identifier);
+
+          // Send a message to the server
           client.send('soloist:touchendorcancel', touchNorm);
           break;
         }
@@ -322,7 +313,8 @@ export default class SoloistPerformance extends clientSide.Performance {
     fingerDiv.style.top = `${yOffset}px`;
 
     this._fingerDivs[id] = fingerDiv;
-    this._spaceDiv.insertBefore(fingerDiv, this._spaceDiv.firstChild.nextSibling);
+    this.view.appendChild(fingerDiv);
+    // this._spaceDiv.insertBefore(fingerDiv, this._spaceDiv.firstChild.nextSibling);
 
     // Timeout
     this._fingerDivTimeouts[id] = setTimeout(() => {
@@ -362,7 +354,8 @@ export default class SoloistPerformance extends clientSide.Performance {
    */
   _removeFingerDiv(id) {
     // Remove the finger `div from the DOM and the dictionary
-    this._spaceDiv.removeChild(this._fingerDivs[id]);
+    // this._spaceDiv.removeChild(this._fingerDivs[id]);
+    this.view.removeChild(this._fingerDivs[id]);
     delete this._fingerDivs[id];
 
     // Timeout

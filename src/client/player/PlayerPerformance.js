@@ -2,12 +2,22 @@
 import clientSide from 'soundworks/client';
 const client = clientSide.client;
 
+// Import Soundfield modules (client side)
+import WhiteNoiseSynth from './WhiteNoiseSynth.js'
+
 // PlayerPerformance class
 export default class PlayerPerformance extends clientSide.Performance {
   constructor(options = {}) {
     super(options);
 
-    // TODO: add text
+    /**
+     * White noise synth.
+     * @type {WhiteNoiseSynth}
+     */
+    this._synth = new WhiteNoiseSynth();
+
+    // Add text to view
+    this.setCenteredViewContent('Listen!');
 
     // Method bindings
     this._onPlay = this._onPlay.bind(this);
@@ -27,10 +37,20 @@ export default class PlayerPerformance extends clientSide.Performance {
   }
 
   _onPlay() {
-    console.log('play!');
+    // Start synth
+    this._synth.start();
+
+    // Change background color
+    this.view.classList.add('white');
+    this.view.classList.remove('black');
   }
 
   _onMute() {
-    console.log('mute!');
+    // Stop synth
+    this._synth.stop();
+
+    // Change background color
+    this.view.classList.add('black');
+    this.view.classList.remove('white');
   }
 }

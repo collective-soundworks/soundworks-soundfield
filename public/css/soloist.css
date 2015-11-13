@@ -211,6 +211,9 @@ h1, h2, h3, h4, h5, h6 {
   height: 10px;
   width: 0%; }
 
+.space {
+  position: relative; }
+
 .touchsurface {
   height: 100%;
   position: absolute;

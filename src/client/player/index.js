@@ -3,7 +3,7 @@ import clientSide from 'soundworks/client';
 const client = clientSide.client;
 const audioContext = clientSide.audioContext;
 
-// Import modules written for Soundfield
+// Import Soundfield modules (client side)
 import PlayerPerformance from './PlayerPerformance.js';
 
 // Initiliaze the client type

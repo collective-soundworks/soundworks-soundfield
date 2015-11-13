@@ -6,7 +6,7 @@ const path = require('path');
 import serverSide from 'soundworks/server';
 const server = serverSide.server;
 
-// Import modules written for Soundfield
+// Import Soundfield modules (server side)
 import PlayerPerformance from './PlayerPerformance.js';
 import SoloistPerformance from './SoloistPerformance.js';
 
