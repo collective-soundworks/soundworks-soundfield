@@ -16,7 +16,8 @@ window.addEventListener('load', () => {
   const space = new clientSide.Space();
   const performance = new SoloistPerformance(setup, space);
 
-  // Start the scenario
+  // Start the scenario.
+  // First, we get the setup, and then we start the performance.
   client.start((serial, parallel) =>
     serial(
       setup,

@@ -19,7 +19,14 @@ const fingerRadius = 0.1;
  */
 const timeoutLength = 8;
 
-// Helper functions
+/**
+ * Create a `<div>` to display the `Space` and another `<div>` to listen to the
+ * `'touchstart'`, `'touchmove'`, `'touchend'`, `'touchcancel'` events.
+ * @param {DOMElement} view View of the module in which to display the `Space`.
+ * @return {Object} `<div>` elements.
+ * @property {DOMElement} spaceDiv `<div>` in which to display the `Space`.
+ * @property {DOMElement} surface `<div>` to listen to the touch events.
+ */
 function createSpaceDiv(view) {
   let spaceDiv = document.createElement('div');
   spaceDiv.setAttribute('id', 'setup');
@@ -42,12 +49,24 @@ function createSpaceDiv(view) {
   }
 }
 
-// SoloistPerformance class
+/**
+ * `SoloistPerformance` class.
+ * The `SoloistPerformance` is responsible for:
+ * - displaying the positions on the players in the performance;
+ * - tracking the soloist's finger(s) on screen and sending the touch
+ *   coordinates to the server.
+ */
 export default class SoloistPerformance extends clientSide.Performance {
+  /**
+   * Create and instance of the class.
+   * @param {Setup} setup Setup of the scenario.
+   * @param {Space} space Space used to display the visualization.
+   * @param {Object} [options={}] Options (as in the base class).
+   */
   constructor(setup, space, options = {}) {
     super(options);
 
-    let dom = createSpaceDiv(this.view);
+    const dom = createSpaceDiv(this.view);
 
     /**
      * Dictionary of the DOM elements that represent a finger on screen.
@@ -64,19 +83,19 @@ export default class SoloistPerformance extends clientSide.Performance {
     this._fingerDivTimeouts = {};
 
     /**
-     * Setup.
+     * Setup of the scenario.
      * @type {Space}
      */
     this._setup = setup;
 
     /**
-     * Space.
+     * Space used to display the visualization.
      * @type {Space}
      */
     this._space = space;
 
     /**
-     * `div` to represent the Space visualization.
+     * `<div>` to represent the Space visualization.
      * @type {DOMElement}
      */
     this._spaceDiv = dom.spaceDiv;
@@ -106,7 +125,7 @@ export default class SoloistPerformance extends clientSide.Performance {
   }
 
   /**
-   * Starts the module.
+   * Start the module.
    *
    * Setup listeners for:
    * - the messages from the server;
@@ -118,7 +137,7 @@ export default class SoloistPerformance extends clientSide.Performance {
     super.start();
 
     // Display the space visualization in the view and adapt the size
-    this._space.display(this._setup, this._spaceDiv, { transform: 'rotate180' });
+    this._space.display(this._setup, this._spaceDiv);
     this._onWindowResize();
 
     // Setup listeners for player connections / disconnections
@@ -137,7 +156,7 @@ export default class SoloistPerformance extends clientSide.Performance {
   }
 
   /**
-   * Resets the module to its initial state.
+   * Reset the module to its initial state.
    *
    * Remove listeners for:
    * - the messages from the server;
@@ -204,20 +223,17 @@ export default class SoloistPerformance extends clientSide.Performance {
 
     // Iterate through the changedTouches array
     for (let i = 0; i < changedTouches.length; i++) {
-      console.log(this._spaceDiv.offsetLeft, this._space.svgOffsetLeft, this._space.svgWidth);
       // Retrieve touch data
       let coordinates = [changedTouches[i].clientX, changedTouches[i].clientY];
       let identifier = changedTouches[i].identifier;
 
-      // Calculate normalized touch position in the space visualization's
-      // referential (we substract to 1 because the surface is rotated by 180°
-      // on the soloist display)
-      let x = 1 - (coordinates[0] -
-                   this._spaceDiv.offsetLeft -
-                   this._space.svgOffsetLeft ) / this._space.svgWidth;
-      let y = 1 - (coordinates[1] -
-                   this._spaceDiv.offsetTop -
-                   this._space.svgOffsetTop) / this._space.svgHeight;
+      // Calculate normalized touch position
+      let x = (coordinates[0] -
+               this._spaceDiv.offsetLeft -
+               this._space.svgOffsetLeft ) / this._space.svgWidth;
+      let y = (coordinates[1] -
+               this._spaceDiv.offsetTop -
+               this._space.svgOffsetTop) / this._space.svgHeight;
 
       // Touch information with normalized coordinates
       let touchNorm = { id: identifier, coordinates: [x, y] };
@@ -225,7 +241,7 @@ export default class SoloistPerformance extends clientSide.Performance {
       // Depending on the event type…
       switch (type) {
         case 'touchstart':
-          // Create a `div` under the finger
+          // Create a `<div>` under the finger
           this._createFingerDiv(identifier, coordinates);
 
           // Send message to the server
@@ -233,7 +249,7 @@ export default class SoloistPerformance extends clientSide.Performance {
           break;
 
         case 'touchmove': {
-          // Move the `div` under the finger or create one if it doesn't exist
+          // Move the `<div>` under the finger or create one if it doesn't exist
           // already (may happen if the finger slides from the edge of the
           // touchscreen)
           if (this._fingerDivs[identifier])
@@ -270,7 +286,6 @@ export default class SoloistPerformance extends clientSide.Performance {
   }
 
   /**
-   * Window resize handler.
    * Redraw the space visualization to fit the window or screen size.
    * @return {[type]} [description]
    */
@@ -290,17 +305,18 @@ export default class SoloistPerformance extends clientSide.Performance {
   }
 
   /**
-   * Create a finger `div` and append it to the DOM (as a child of the `view`).
-   * @param {Number} id Identifier of the `div` (comes from the touch
+   * Create a finger `<div>` and append it to the DOM (as a child of the
+   * `view`).
+   * @param {Number} id Identifier of the `<div>` (comes from the touch
    * identifier).
-   * @param {Number[]} coordinates Coordinates of the `div` (comes from the
+   * @param {Number[]} coordinates Coordinates of the `<div>` (comes from the
    * touch coordinates, as a `[x:Number, y:Number]` array).
    */
   _createFingerDiv(id, coordinates) {
     // Calculate the radius in pixels
     const radius = fingerRadius * this._pxRatio;
 
-    // Calculate the coordinates of the finger `div`
+    // Calculate the coordinates of the finger `<div>`
     const xOffset = coordinates[0] - radius;
     const yOffset = coordinates[1] - radius;
 
@@ -323,20 +339,20 @@ export default class SoloistPerformance extends clientSide.Performance {
   }
 
   /**
-   * Move a finger `div`.
-   * @param {Number} id Identifier of the `div`.
-   * @param {Number[]} coordinates Coordinates of the `div` (as a `[x:Number,
+   * Move a finger `<div>`.
+   * @param {Number} id Identifier of the `<div>`.
+   * @param {Number[]} coordinates Coordinates of the `<div>` (as a `[x:Number,
    * y:Number]` array).
    */
   _moveFingerDiv(id, coordinates) {
     // Calculate the radius in pixels
     const radius = fingerRadius * this._pxRatio;
 
-    // Calculate the coordinates of the finger `div`
+    // Calculate the coordinates of the finger `<div>`
     const xOffset = coordinates[0] - radius;
     const yOffset = coordinates[1] - radius;
 
-    // Move the finger `div`
+    // Move the finger `<div>`
     let fingerDiv = this._fingerDivs[id];
     fingerDiv.style.left = `${xOffset}px`;
     fingerDiv.style.top = `${yOffset}px`;
@@ -350,7 +366,7 @@ export default class SoloistPerformance extends clientSide.Performance {
 
   /**
    * Deletes a finger div from the DOM.
-   * @param {Number} id Identifier of the `div`.
+   * @param {Number} id Identifier of the `<div>`.
    */
   _removeFingerDiv(id) {
     // Remove the finger `div from the DOM and the dictionary

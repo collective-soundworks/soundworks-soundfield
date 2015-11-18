@@ -22,6 +22,10 @@ const app = express();
 const dir = path.join(process.cwd(), 'public');
 server.start(app, dir, process.env.PORT || 3000);
 
-// Map modules to client types
+// Map modules to client types:
+// - the `player` clients need to communicate with the `setup`, the `locator`
+//   and the `playerPerformance` on the server side;
+// - the `soloist` clients need to communicate with the `setup` and the
+//   `soloistPerformance` on the server side.
 server.map('player', setup, locator, playerPerformance);
 server.map('soloist', setup, soloistPerformance);

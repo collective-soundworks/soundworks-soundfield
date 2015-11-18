@@ -27,7 +27,11 @@ const timeoutLength = 8;
 const rInv2 = 1 / (fingerRadius * fingerRadius);
 
 
-// Helper functions
+/**
+ * Get minimum value of an array.
+ * @param {Array} array Array.
+ * @return {Number} Minimum value of the array.
+ */
 function getMinOfArray(array) {
   if (array.length > 0)
     return array.reduce((p, v) => (p < v) ? p : v);
@@ -35,12 +39,34 @@ function getMinOfArray(array) {
   return undefined;
 }
 
+/**
+ * Retrieve information (index and coordinates) about the client.
+ * @param {Client} client Client.
+ * @return {Object} Information about the client.
+ * @property {Number} index Index of the client.
+ * @property {Number[]} coordinates Coordinates of the client (`[x:Number,
+ * y:Number]` array).
+ */
 function getInfo(client) {
   return { index: client.index, coordinates: client.coordinates };
 }
 
-// SoloistPerformance class
+/**
+ * `SoloistPerformance` class.
+ * The `SoloistPerformance` class makes the connection between the `'soloist'`
+ * clients and the `'player'` clients. More specifically, the module listens for
+ * the messages from the `'soloist'` clients (with the touch coordinates),
+ * calculates the distances from the touch to every `'player'` client, and sends
+ * a 'play' or 'mute' message to the relevant `'player'` clients.
+ */
 export default class SoloistPerformance extends serverSide.Performance {
+  /**
+   * Create an instance of the class.
+   * @param {Performance} playerPerformance `'player'` clients performance
+   * module (server side).
+   * @param {Setup} setup Setup of the scenario.
+   * @param {Object} [options={}] Options (as in the base class).
+   */
   constructor(playerPerformance, setup, options = {}) {
     super(options);
 
@@ -99,6 +125,11 @@ export default class SoloistPerformance extends serverSide.Performance {
     return 1;
   }
 
+  /**
+   * Called when a soloist starts the (soloist) performance.
+   * The method sends the player list, and listens for touch messages.
+   * @param {Client} soloist Soloist that enters the performance.
+   */
   enter(soloist) {
     super.enter(soloist);
 
@@ -112,16 +143,14 @@ export default class SoloistPerformance extends serverSide.Performance {
     soloist.receive('soloist:touchendorcancel', this._onTouchEndOrCancel);
   }
 
-  exit(soloist) {
-    super.enter(soloist);
-
-    // Remove client message listeners
-    // soloist.removeListener('soloist:touchstart', this._onTouchStart);
-    // soloist.removeListener('soloist:touchmove', this._onTouchMove);
-    // soloist.removeListener('soloist:touchendorcancel',
-    //                        this._onTouchEndOrCancel);
-  }
-
+  /**
+   * Calculate the squared distance between two points in a 2D space.
+   * @param {Number[]} a Coordinates of the first point (`[x:Number,
+   * y:Number]`).
+   * @param {Number[]} b Coordinates of the second point (`[x:Number,
+   * y:Number]`).
+   * @return {Number} Squared distance between the two points.
+   */
   _getDistance(a, b) {
     const x = (a[0] - b[0]) * this._widthNormalisation;
     const x2 = x * x;
@@ -132,6 +161,10 @@ export default class SoloistPerformance extends serverSide.Performance {
     return (a === null) ? Infinity : Math.min(1, rInv2 * (x2 + y2));
   }
 
+  /**
+   * Calculate the distance of each player to the closest touch (finger on
+   * screen) and sends messages to the `'player'` clients accordingly.
+   */
   _updateDistances() {
     // If at least one finger is on screen
     if (Object.keys(this._touches).length > 0) {
@@ -179,6 +212,11 @@ export default class SoloistPerformance extends serverSide.Performance {
     }
   }
 
+  /**
+   * `'soloist:touchstart'` event handler.
+   * Add a new touch to the touches dictionary, and recalculate the distances.
+   * @param {Object} touch Touch.
+   */
   _onTouchStart(touch) {
     // Create touch in the dictionary
     this._touches[touch.id] = {};
@@ -192,9 +230,12 @@ export default class SoloistPerformance extends serverSide.Performance {
     this._updateDistances();
   }
 
+  /**
+   * `'soloist:touchmove'` event handler.
+   * Update the touches dictionary, and recalculate the distances.
+   * @param {Object} touch Touch.
+   */
   _onTouchMove(touch) {
-    console.log('touch move', touch.coordinates);
-
     // If the touch is not in the dictionary already (may happen if the finger
     // slides from the edge of the touchscreen)
     if (!this._touches[touch.id]) {
@@ -216,12 +257,13 @@ export default class SoloistPerformance extends serverSide.Performance {
     this._updateDistances();
   }
 
+  /**
+   * `'soloist:touchendorcancel'` event handler.
+   * Delete a touch from the touches dictionary, and recalculate the distances.
+   * @param {Object} touch Touch.
+   */
   _onTouchEndOrCancel(touch) {
     delete this._touches[touch.id];
     this._updateDistances();
-  }
-
-  _deleteTouch(id) {
-    delete this._touches[id];
   }
 }

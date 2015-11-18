@@ -25,13 +25,17 @@ export default class PlayerPerformance extends clientSide.Performance {
   }
 
   start() {
-    super.start(); // don't forget this
+    super.start();
 
+    // Setup listeners for server messages
     client.receive('player:play', this._onPlay);
     client.receive('player:mute', this._onMute);
   }
 
   reset() {
+    super.reset();
+
+    // Remove listeners for server messages
     client.removeListener('player:play', this._onPlay);
     client.removeListener('player:mute', this._onMute);
   }

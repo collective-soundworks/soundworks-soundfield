@@ -2,7 +2,10 @@
 import clientSide from 'soundworks/client';
 const audioContext = clientSide.audioContext;
 
-// Helper function
+/**
+ * Create a white noise buffer.
+ * @return {AudioBuffer} White noise buffer
+ */
 function createWhiteNoiseBuffer() {
   const bufferSize = 2 * audioContext.sampleRate;
   let noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
@@ -14,33 +17,49 @@ function createWhiteNoiseBuffer() {
   return noiseBuffer;
 }
 
-// WhiteNoiseSynth class
+/**
+ * `WhiteNoiseSynth` class.
+ * The `WhiteNoiseSynth` class creates a white noise synth.
+ */
 export default class WhiteNoiseSynth {
+  /**
+   * Create a new instance of the class.
+   */
   constructor() {
-    const noiseBuffer = createWhiteNoiseBuffer();
+    /**
+     * White noise buffer source node.
+     * @type {AudioBufferSourceNode}
+     */
+    this._whiteNoise = audioContext.createBufferSource();
+    this._whiteNoise.buffer = createWhiteNoiseBuffer();
+    this._whiteNoise.loop = true;
+    this._whiteNoise.start(0);
 
-    // Buffer source node
-    let whiteNoise = audioContext.createBufferSource();
-    whiteNoise.buffer = noiseBuffer;
-    whiteNoise.loop = true;
-    whiteNoise.start(0);
-    this._whiteNoise = whiteNoise;
-
-    // Output gain node
-    let outputGain = audioContext.createGain();
-    outputGain.gain.value = 0;
-    this._out = outputGain;
+    /**
+     * Output gain node.
+     * @type {GainNode}
+     */
+    this._output = audioContext.createGain();
+    this._output.gain.value = 0;
 
     // Connect nodes
-    this._whiteNoise.connect(this._out);
-    this._out.connect(audioContext.destination);
+    this._whiteNoise.connect(this._output);
+    this._output.connect(audioContext.destination);
   }
 
+  /**
+   * Start the synth.
+   */
   start() {
-    this._out.gain.value = 1;
+    this._output.gain.linearRampToValueAtTime(1,
+                                              audioContext.currentTime + 0.5);
   }
 
+  /**
+   * Stop de synth.
+   */
   stop() {
-    this._out.gain.value = 0;
+    this._output.gain.linearRampToValueAtTime(0,
+                                              audioContext.currentTime + 0.5);
   }
 }

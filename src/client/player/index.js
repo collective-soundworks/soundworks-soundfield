@@ -23,13 +23,26 @@ window.addEventListener('load', () => {
   const locator = new clientSide.Locator({ setup: setup, space: space });
   const performance = new PlayerPerformance();
 
-  // Start the scenario
+  // Start the scenario.
+  //
+  // The scenario consists in two major steps:
+  // - the initialization;
+  // - the performance.
+  //
+  // The initialization step consists in welcoming the player and getting his /
+  // her location. These two sub-steps can happen in parallel. The “Getting the
+  // location” step requires to know the setup beforehand, so we launch in
+  // serial the setup module to get the setup, and then the locator.
+  //
+  // The performance step can start when the initialization step is done.
   client.start((serial, parallel) =>
     serial(
+      // Initialization step
       parallel(
-        welcome,
-        serial(setup, locator)
+        welcome, // Welcome screen
+        serial(setup, locator) // Get the location (setup first, locator then)
       ),
+      // Performance step
       performance
     )
   );
