@@ -1,7 +1,10 @@
-// Import Soundworks modules (client side)
-import clientSide from 'soundworks/client';
-const client = clientSide.client;
-const audioContext = clientSide.audioContext;
+// Import Soundworks library modules (client side)
+import { client,
+         audioContext,
+         Dialog,
+         Locator,
+         Setup,
+         Space } from 'soundworks/client';
 
 // Import Soundfield modules (client side)
 import PlayerPerformance from './PlayerPerformance.js';
@@ -12,18 +15,18 @@ client.init('player');
 // Where the magic happens
 window.addEventListener('load', () => {
   // Instantiate the modules
-  const welcome = new clientSide.Dialog({
+  const welcome = new Dialog({
     name: 'welcome',
     text: `<p>Welcome to <b>Soundfield</b>.</p>
            <p>Touch the screen to join!</p>`,
     activateAudio: true
   });
-  const setup = new clientSide.Setup();
-  const space = new clientSide.Space();
-  const locator = new clientSide.Locator({ setup: setup, space: space });
+  const setup = new Setup();
+  const space = new Space();
+  const locator = new Locator({ setup: setup, space: space });
   const performance = new PlayerPerformance();
 
-  // Start the scenario.
+  // Start the scenario and order the modules.
   //
   // The scenario consists in two major steps:
   // - the initialization;
