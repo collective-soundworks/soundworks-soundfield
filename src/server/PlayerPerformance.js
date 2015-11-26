@@ -31,7 +31,7 @@ export default class PlayerPerformance extends serverSide.Performance {
 
   /**
    * Called when a client starts the performance.
-   * The method relays the information to the `'soloist'` clients.
+   * The method relays that information to the `'soloist'` clients.
    * @param {Client} client Client that enters the performance.
    */
   enter(client) {
