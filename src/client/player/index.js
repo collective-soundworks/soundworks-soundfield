@@ -1,6 +1,5 @@
 // Import Soundworks library modules (client side)
 import { client,
-         audioContext,
          Dialog,
          Locator,
          Setup,
