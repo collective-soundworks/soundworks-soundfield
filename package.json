@@ -1,8 +1,9 @@
 {
   "name": "soundfield",
   "authors": [
+    "Benjamin Matuszewski",
     "Sébastien Robaszkiewicz",
-    "Norbert Schnell"
+    "Norbert Schnell",
   ],
   "description": "Soundfield is a Soundworks-based application where players indicate their positions on a map, and where a soloist can visualize the players' positions and play sounds on the players' smartphones via a touch interface.",
   "version": "0.3.0",
