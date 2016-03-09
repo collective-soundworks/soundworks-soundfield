@@ -182,18 +182,18 @@ export default class SoloistPerformance extends serverSide.Performance {
         let d = getMinOfArray(distances);
 
         // If the player is within range for playing sound
-        if (d < 1 && !player.modules.performance.isPlaying) {
+        if (d < 1 && !player.activities.performance.isPlaying) {
           // Send message to the player
           player.send('player:play');
           // Update the player status
-          player.modules.performance.isPlaying = true;
+          player.activities.performance.isPlaying = true;
         }
         // Otherwise, and if the player is currently playing sound
-        else if (d === 1 && player.modules.performance.isPlaying) {
+        else if (d === 1 && player.activities.performance.isPlaying) {
           // Send message to the player
           player.send('player:mute');
           // Update the player status
-          player.modules.performance.isPlaying = false;
+          player.activities.performance.isPlaying = false;
         }
       }
     }
@@ -202,11 +202,11 @@ export default class SoloistPerformance extends serverSide.Performance {
       // For each player in the performance
       for (let player of this._playerPerformance.clients) {
         // If the player is currently playing sound
-        if (player.modules.performance.isPlaying) {
+        if (player.activities.performance.isPlaying) {
           // Send message to the player
           player.send('player:mute');
           // Update the player status
-          player.modules.performance.isPlaying = false;
+          player.activities.performance.isPlaying = false;
         }
       }
     }

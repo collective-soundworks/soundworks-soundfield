@@ -1,11 +1,11 @@
-// Import Soundworks library modules (client side)
+// Import Soundworks library (client side)
 import { client,
          Dialog,
          Locator,
          Setup,
          Space } from 'soundworks/client';
 
-// Import Soundfield modules (client side)
+// Import player experience (client side)
 import PlayerPerformance from './PlayerPerformance.js';
 
 // Initiliaze the client type
