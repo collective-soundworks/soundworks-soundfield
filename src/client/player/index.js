@@ -1,51 +1,23 @@
-// Import Soundworks library modules (client side)
-import { client,
-         Dialog,
-         Locator,
-         Setup,
-         Space } from 'soundworks/client';
+// Import soundworks (client side) and Soundfield experience
+import soundworks from 'soundworks/client';
+import PlayerExperience from './PlayerExperience.js';
 
-// Import Soundfield modules (client side)
-import PlayerPerformance from './PlayerPerformance.js';
+/**
+ * The scenario consists in 3 steps:
+ * - initialization of the required APIs ('welcome' service)
+ * - getting the location of the user ('locator' service)
+ * - the experience
+ */
+function bootstrap () {
+  // configuration shared by the server (cf. `views/default.ejs`)
+  const socketIO = window.CONFIG && window.CONFIG.SOCKET_CONFIG;
+  const appName = window.CONFIG && window.CONFIG.APP_NAME;
 
-// Initiliaze the client type
-client.init('player');
+  soundworks.client.init('player', { socketIO, appName });
+  const playerExperience = new PlayerExperience();
 
-// Where the magic happens
-window.addEventListener('load', () => {
-  // Instantiate the modules
-  const welcome = new Dialog({
-    name: 'welcome',
-    text: `<p>Welcome to <b>Soundfield</b>.</p>
-           <p>Touch the screen to join!</p>`,
-    activateAudio: true
-  });
-  const setup = new Setup();
-  const space = new Space();
-  const locator = new Locator({ setup: setup, space: space });
-  const performance = new PlayerPerformance();
+  // start the application.
+  soundworks.client.start();
+}
 
-  // Start the scenario and order the modules.
-  //
-  // The scenario consists in two major steps:
-  // - the initialization;
-  // - the performance.
-  //
-  // The initialization step consists in welcoming the player and getting his /
-  // her location. These two sub-steps can happen in parallel. The “Getting the
-  // location” step requires to know the setup beforehand, so we launch in
-  // serial the setup module to get the setup, and then the locator.
-  //
-  // The performance step can start when the initialization step is done.
-  client.start((serial, parallel) =>
-    serial(
-      // Initialization step
-      parallel(
-        welcome, // Welcome screen
-        serial(setup, locator) // Get the location (setup first, locator then)
-      ),
-      // Performance step
-      performance
-    )
-  );
-});
+window.addEventListener('load', bootstrap);

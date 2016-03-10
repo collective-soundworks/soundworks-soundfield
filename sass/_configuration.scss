@@ -1,6 +1,26 @@
-/* =======================================================
- * COLORS
- * ======================================================= */
+// -----------------------------------------------------------------
+// GLOBALS
+// -----------------------------------------------------------------
+
+$backgroundColor: #080808;
+$foregroundColor: #ffffff;
+$textColor: rgba(255, 255, 255, 0.9);
+$borderRadius: 2px;
+$mainFont: Quicksand, arial, sans-serif;
+$loaderProgressBarHeight: 10px;
+
+// -----------------------------------------------------------------
+// IMPORTS FONTS
+// -----------------------------------------------------------------
+
+@include font-face('Quicksand', 100, 'Quicksand-Light');
+@include font-face('Quicksand', 400, 'Quicksand-Regular');
+@include font-face('Quicksand', 700, 'Quicksand-Bold');
+
+
+// -----------------------------------------------------------------
+// COLOR LIST
+// -----------------------------------------------------------------
 
 /**
  * These color swatches were inspired by the swatches

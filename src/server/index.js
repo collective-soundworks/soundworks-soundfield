@@ -1,30 +1,29 @@
-// Import external libraries
-const express = require('express');
-const path = require('path');
+// Import soundworks (server-side) and experiences
+import soundworks from 'soundworks/server';
+import PlayerExperience from './PlayerExperience';
+import SoloistExperience from './SoloistExperience';
 
-// Import Soundworks library modules (server side)
-import { server, Locator, Setup } from 'soundworks/server';
+const setup = { height: 10, width: 10 };
+soundworks.server.init({ setup, appName: 'Soundfield' });
 
-// Import Soundfield modules (server side)
-import PlayerPerformance from './PlayerPerformance.js';
-import SoloistPerformance from './SoloistPerformance.js';
+// Configure locator
+soundworks.server.require('locator', { setup, clientType: 'player' });
 
-// Instantiate the modules
-const setup = new Setup();
-setup.generate('surface', { height: 1, width: 1 });
-const locator = new Locator({ setup: setup });
-const playerPerformance = new PlayerPerformance();
-const soloistPerformance = new SoloistPerformance(playerPerformance, setup);
+const playerExperience = new PlayerExperience();
+// the soloist needs to know all the clients and the setup
+const soloistExperience = new SoloistExperience(playerExperience.clients, setup);
 
-// Launch server
-const app = express();
-const dir = path.join(process.cwd(), 'public');
-server.start(app, dir, process.env.PORT || 3000);
+// Add client types to experiences
+playerExperience.addClientType('player');
+soloistExperience.addClientType('soloist');
+
+soundworks.server.start();
+
 
 // Map modules to client types:
 // - the `'player'` clients need to communicate with the `setup`, the `locator`
 //   and the `playerPerformance` on the server side;
 // - the `'soloist'` clients need to communicate with the `setup` and the
 //   `soloistPerformance` on the server side.
-server.map('player', setup, locator, playerPerformance);
-server.map('soloist', setup, soloistPerformance);
+// server.map('player', setup, locator, playerPerformance);
+// server.map('soloist', setup, soloistPerformance);

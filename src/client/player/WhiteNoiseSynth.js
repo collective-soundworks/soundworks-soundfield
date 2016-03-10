@@ -1,6 +1,4 @@
-// Import Soundworks modules (client side)
-import clientSide from 'soundworks/client';
-const audioContext = clientSide.audioContext;
+import { audioContext } from 'soundworks/client';
 
 /**
  * Create a white noise buffer.
@@ -18,48 +16,36 @@ function createWhiteNoiseBuffer() {
 }
 
 /**
- * `WhiteNoiseSynth` class.
  * The `WhiteNoiseSynth` class creates a white noise synth.
  */
 export default class WhiteNoiseSynth {
-  /**
-   * Create a new instance of the class.
-   */
   constructor() {
-    /**
-     * White noise buffer source node.
-     * @type {AudioBufferSourceNode}
-     */
-    this._whiteNoise = audioContext.createBufferSource();
-    this._whiteNoise.buffer = createWhiteNoiseBuffer();
-    this._whiteNoise.loop = true;
-    this._whiteNoise.start(0);
-
     /**
      * Output gain node.
      * @type {GainNode}
      */
     this._output = audioContext.createGain();
+    this._output.connect(audioContext.destination);
     this._output.gain.value = 0;
 
-    // Connect nodes
+    /**
+     * White noise buffer source node.
+     * @type {AudioBufferSourceNode}
+     */
+    this._whiteNoise = audioContext.createBufferSource();
     this._whiteNoise.connect(this._output);
-    this._output.connect(audioContext.destination);
+    this._whiteNoise.buffer = createWhiteNoiseBuffer();
+    this._whiteNoise.loop = true;
+    this._whiteNoise.start(0);
   }
 
-  /**
-   * Start the synth.
-   */
   start() {
-    this._output.gain.linearRampToValueAtTime(1,
-                                              audioContext.currentTime + 0.5);
+    const now = audioContext.currentTime;
+    this._output.gain.linearRampToValueAtTime(1, now + 0.5);
   }
 
-  /**
-   * Stop de synth.
-   */
   stop() {
-    this._output.gain.linearRampToValueAtTime(0,
-                                              audioContext.currentTime + 0.5);
+    const now = audioContext.currentTime;
+    this._output.gain.linearRampToValueAtTime(0, now + 0.5);
   }
 }

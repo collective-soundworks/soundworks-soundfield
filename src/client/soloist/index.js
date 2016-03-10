@@ -1,27 +1,23 @@
-// Import Soundworks modules (client side)
-import clientSide from 'soundworks/client';
-const client = clientSide.client;
-const audioContext = clientSide.audioContext;
+// Import soundworks (client side) and Soundfield experience
+import soundworks from 'soundworks/client';
+import SoloistExperience from './SoloistExperience.js';
 
-// Import Soundfield modules (client side)
-import SoloistPerformance from './SoloistPerformance.js';
+/**
+ * The scenario consists in 3 steps:
+ * - initialization of the required APIs ('welcome' service)
+ * - getting the location of the user ('locator' service)
+ * - the experience
+ */
+function bootstrap () {
+  // configuration shared by the server (cf. `views/default.ejs`)
+  const socketIO = window.CONFIG && window.CONFIG.SOCKET_CONFIG;
+  const appName = window.CONFIG && window.CONFIG.APP_NAME;
 
-// Initialize the client type
-client.init('soloist');
+  soundworks.client.init('soloist', { socketIO, appName });
+  const soloistExperience = new SoloistExperience();
 
-// Where the magic happens
-window.addEventListener('load', () => {
-  // Instantiate the modules
-  const setup = new clientSide.Setup();
-  const space = new clientSide.Space();
-  const performance = new SoloistPerformance(setup, space);
+  // start the application.
+  soundworks.client.start();
+}
 
-  // Start the scenario.
-  // First, we get the setup, and then we start the performance.
-  client.start((serial, parallel) =>
-    serial(
-      setup,
-      performance
-    )
-  );
-});
+window.addEventListener('load', bootstrap);

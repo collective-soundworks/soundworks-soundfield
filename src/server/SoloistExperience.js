@@ -1,6 +1,5 @@
-// Import Soundworks library (server side)
-import serverSide from 'soundworks/server';
-const server = serverSide.server;
+import { ServerExperience } from 'soundworks/server';
+
 
 /**
  * Normalized value of radius of the finger graphical representation (a
@@ -9,7 +8,7 @@ const server = serverSide.server;
  * width of the space visualization.
  * @type {Number}
  */
-const fingerRadius = 0.1;
+// const fingerRadius = 0.1;
 
 /**
  * Length of the timeout (in seconds) after which the touch is automatically
@@ -17,14 +16,14 @@ const fingerRadius = 0.1;
  * through).
  * @type {Number}
  */
-const timeoutLength = 8;
+// const timeoutLength = 8;
 
 /**
  * Inverse of the squared finger radius normalized value, used for optimization
  * in the distances calculations.
  * @type {Number}
  */
-const rInv2 = 1 / (fingerRadius * fingerRadius);
+// const rInv2 = 1 / (fingerRadius * fingerRadius);
 
 
 /**
@@ -32,12 +31,12 @@ const rInv2 = 1 / (fingerRadius * fingerRadius);
  * @param {Array} array Array.
  * @return {Number} Minimum value of the array.
  */
-function getMinOfArray(array) {
-  if (array.length > 0)
-    return array.reduce((p, v) => (p < v) ? p : v);
+// function getMinOfArray(array) {
+//   if (array.length > 0)
+//     return array.reduce((p, v) => (p < v) ? p : v);
 
-  return undefined;
-}
+//   return undefined;
+// }
 
 /**
  * Retrieve information (index and coordinates) about the client.
@@ -59,7 +58,7 @@ function getInfo(client) {
  * calculates the distances from the touch to every `'player'` client, and sends
  * a 'play' or 'mute' message to the relevant `'player'` clients.
  */
-export default class SoloistPerformance extends serverSide.Performance {
+export default class SoloistExperience extends ServerExperience {
   /**
    * Create an instance of the class.
    * @param {Performance} playerPerformance `'player'` clients performance
@@ -67,14 +66,14 @@ export default class SoloistPerformance extends serverSide.Performance {
    * @param {Setup} setup Setup of the scenario.
    * @param {Object} [options={}] Options (as in the base class).
    */
-  constructor(playerPerformance, setup, options = {}) {
+  constructor(players, setup, options = {}) {
     super(options);
 
     /**
      * Player performance module.
      * @type {Performance}
      */
-    this._playerPerformance = playerPerformance;
+    this._players = players;
 
     /**
      * Setup module.
@@ -87,60 +86,64 @@ export default class SoloistPerformance extends serverSide.Performance {
      * Keys are the touch identifiers retrived in the touch events.
      * @type {Object}
      */
-    this._touches = {};
+    // this._touches = {};
 
-    // Method bindings
-    this._onTouchStart = this._onTouchStart.bind(this);
-    this._onTouchMove = this._onTouchMove.bind(this);
-    this._onTouchEndOrCancel = this._onTouchEndOrCancel.bind(this);
+    // // Method bindings
+    // this._onTouchStart = this._onTouchStart.bind(this);
+    // this._onTouchMove = this._onTouchMove.bind(this);
+    // this._onTouchEndOrCancel = this._onTouchEndOrCancel.bind(this);
   }
 
   /**
    * Calculate the width / height ratio of the space.
    * @return {Number} Width / height ratio of the space.
    */
-  get _widthHeightRatio() {
-    return this._setup.width / this._setup.height;
-  }
+  // get _widthHeightRatio() {
+  //   return this._setup.width / this._setup.height;
+  // }
 
   /**
    * Calculate the width normalization factor (all the distance calculations
    * are made in a normalized space where height and width equal 1).
    * @return {Number} Width normalization factor.
    */
-  get _widthNormalisation() {
-    if (this._widthHeightRatio > 1)
-      return 1;
-    return this._widthHeightRatio;
-  }
+  // get _widthNormalisation() {
+  //   if (this._widthHeightRatio > 1)
+  //     return 1;
+  //   return this._widthHeightRatio;
+  // }
 
   /**
    * Calculate the height normalization factor (all the distance calculations
    * are made in a normalized space where height and width equal 1).
    * @return {Number} Height normalization factor.
    */
-  get _heightNormalisation() {
-    if (this._widthHeightRatio > 1)
-      return 1 / this._widthHeightRatio;
-    return 1;
-  }
+  // get _heightNormalisation() {
+  //   if (this._widthHeightRatio > 1)
+  //     return 1 / this._widthHeightRatio;
+  //   return 1;
+  // }
 
   /**
    * Called when a soloist starts the (soloist) performance.
    * The method sends the player list, and listens for touch messages.
    * @param {Client} soloist Soloist that enters the performance.
    */
-  enter(soloist) {
-    super.enter(soloist);
+  enter(client) {
+    super.enter(client);
 
-    // Send list of players to the soloist
-    const playerList = this._playerPerformance.clients.map((c) => getInfo(c));
-    soloist.send('performance:playerList', playerList);
+    this.receive(client, 'request', () => {
+      this.send(client, 'area', this._setup);
+    });
 
-    // Setup client message listeners
-    soloist.receive('soloist:touchstart', this._onTouchStart);
-    soloist.receive('soloist:touchmove', this._onTouchMove);
-    soloist.receive('soloist:touchendorcancel', this._onTouchEndOrCancel);
+    // Send list of players to the client
+    // const playerList = this._playerPerformance.clients.map((c) => getInfo(c));
+    // client.send('performance:playerList', playerList);
+
+    // // Setup client message listeners
+    // client.receive('soloist:touchstart', this._onTouchStart);
+    // client.receive('soloist:touchmove', this._onTouchMove);
+    // client.receive('soloist:touchendorcancel', this._onTouchEndOrCancel);
   }
 
   /**
