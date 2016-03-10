@@ -1,21 +1,22 @@
+// Enable sourceMaps in node
+import 'source-map-support/register';
 // Import soundworks (server-side) and experiences
-import soundworks from 'soundworks/server';
+import * as soundworks from 'soundworks/server';
 import PlayerExperience from './PlayerExperience';
 import SoloistExperience from './SoloistExperience';
 
-const setup = { height: 10, width: 10 };
+const setup = {
+  height: 10,
+  width: 10
+};
+
 soundworks.server.init({ setup, appName: 'Soundfield' });
 
+// todo - move everything in one experience
 // Configure locator
-soundworks.server.require('locator', { setup, clientType: 'player' });
-
-const playerExperience = new PlayerExperience();
-// the soloist needs to know all the clients and the setup
-const soloistExperience = new SoloistExperience(playerExperience.clients, setup);
-
-// Add client types to experiences
-playerExperience.addClientType('player');
-soloistExperience.addClientType('soloist');
+const playerExperience = new PlayerExperience('player');
+// the soloist needs to know all the players
+const soloistExperience = new SoloistExperience('soloist', playerExperience);
 
 soundworks.server.start();
 

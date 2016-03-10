@@ -1,4 +1,4 @@
-import { ServerExperience } from 'soundworks/server';
+import { Experience } from 'soundworks/server';
 
 
 /**
@@ -6,21 +6,11 @@ import { ServerExperience } from 'soundworks/server';
  * disconnections, and informs the `'soloist'` clients about them so that they
  * can update the performance visualization accordingly.
  */
-export default class PlayerExperience extends ServerExperience {
-  constructor() {
-    super('player-experience');
-  }
+export default class PlayerExperience extends Experience {
+  constructor(clientType) {
+    super(clientType);
 
-  /**
-   * Retrieve informations (uid and coordinates) of the client.
-   * @param {Client} client
-   * @return {Object}
-   * @property {Number} uid - Unique id of the client.
-   * @property {Array<Number>} coordinates - Coordinates of the client (`[x:Number,
-   * y:Number]` array).
-   */
-  _getInfo(client) {
-    return { uid: client.uid, coordinates: client.coordinates };
+    this._locator = this.require('locator');
   }
 
   /**
@@ -31,7 +21,8 @@ export default class PlayerExperience extends ServerExperience {
   enter(client) {
     super.enter(client);
     // Inform the soloist that a new player entered the performance
-    this.broadcast('soloist', null, 'player-add', this._getInfo(client));
+    // both server-side and client-side
+    this.emit('enter:player', client);
   }
 
   /**
@@ -42,6 +33,7 @@ export default class PlayerExperience extends ServerExperience {
   exit(client) {
     super.exit(client);
     // Inform the soloist that a player exited the performance
-    this.broadcast('soloist', null, 'player-remove', this._getInfo(client));
+    // both server-side and client-side
+    this.emit('exit:player', client);
   }
 }

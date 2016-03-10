@@ -1,4 +1,4 @@
-import { ServerExperience } from 'soundworks/server';
+import { Experience } from 'soundworks/server';
 
 
 /**
@@ -46,9 +46,9 @@ import { ServerExperience } from 'soundworks/server';
  * @property {Number[]} coordinates Coordinates of the client (`[x:Number,
  * y:Number]` array).
  */
-function getInfo(client) {
-  return { index: client.index, coordinates: client.coordinates };
-}
+// function getInfo(client) {
+//   return { index: client.index, coordinates: client.coordinates };
+// }
 
 /**
  * `SoloistPerformance` class.
@@ -58,7 +58,7 @@ function getInfo(client) {
  * calculates the distances from the touch to every `'player'` client, and sends
  * a 'play' or 'mute' message to the relevant `'player'` clients.
  */
-export default class SoloistExperience extends ServerExperience {
+export default class SoloistExperience extends Experience {
   /**
    * Create an instance of the class.
    * @param {Performance} playerPerformance `'player'` clients performance
@@ -66,20 +66,33 @@ export default class SoloistExperience extends ServerExperience {
    * @param {Setup} setup Setup of the scenario.
    * @param {Object} [options={}] Options (as in the base class).
    */
-  constructor(players, setup, options = {}) {
-    super(options);
+  constructor(clientType, playerExperience) {
+    super(clientType);
 
     /**
      * Player performance module.
      * @type {Performance}
      */
-    this._players = players;
+    this._players = new Map();
+
+    /**
+     * List of currently active players.
+     * @type {Set}
+     */
+    this._activePlayers = new Set();
+
+    this._sharedConfig = this.require('shared-config');
 
     /**
      * Setup module.
      * @type {Setup}
      */
-    this._setup = setup;
+    this._setup = this._sharedConfig.get('setup');
+    // `soloist` clients also need `setup` informations
+    this._sharedConfig.addItem('setup', clientType);
+
+    this.playerExperience = playerExperience;
+
 
     /**
      * Dictionary of the current touches (fingers) on screen.
@@ -92,6 +105,25 @@ export default class SoloistExperience extends ServerExperience {
     // this._onTouchStart = this._onTouchStart.bind(this);
     // this._onTouchMove = this._onTouchMove.bind(this);
     // this._onTouchEndOrCancel = this._onTouchEndOrCancel.bind(this);
+
+    this.onInputChange = this.onInputChange.bind(this);
+  }
+
+  /**
+   * Format informations (uuid and coordinates) of the given player
+   * to be comsumed simply by the client.
+   * @param {Client} client
+   * @return {Object}
+   * @property {Number} uuid - Unique id of the client.
+   * @property {Array<Number>} coordinates - Coordinates of the client (`[x:Number,
+   * y:Number]` array).
+   */
+  _getPlayerInfo(client) {
+    return {
+      id: client.uuid,
+      x: client.coordinates[0],
+      y: client.coordinates[1],
+    };
   }
 
   /**
@@ -132,18 +164,61 @@ export default class SoloistExperience extends ServerExperience {
   enter(client) {
     super.enter(client);
 
-    this.receive(client, 'request', () => {
-      this.send(client, 'area', this._setup);
+    this.send(client, 'player:list', Array.from(this._players.values()));
+
+    this.playerExperience.addListener('enter:player', (player) => {
+      const infos = this._getPlayerInfo(player);
+      this._players.set(player, infos);
+      this.send(client, 'player:add', infos);
     });
 
-    // Send list of players to the client
-    // const playerList = this._playerPerformance.clients.map((c) => getInfo(c));
-    // client.send('performance:playerList', playerList);
+    this.playerExperience.addListener('exit:player', (player) => {
+      const infos = this._players.get(player);
+      this._players.delete(player);
+      this.send(client, 'player:remove', infos);
+    });
 
-    // // Setup client message listeners
-    // client.receive('soloist:touchstart', this._onTouchStart);
-    // client.receive('soloist:touchmove', this._onTouchMove);
-    // client.receive('soloist:touchendorcancel', this._onTouchEndOrCancel);
+    this.receive(client, 'input:change', this.onInputChange);
+  }
+
+  onInputChange(radius, coordinates) {
+    const activePlayers = this._activePlayers;
+
+    // if coordinates are empty, stop all players
+    if (Object.keys(coordinates).length === 0) {
+      for (let player of this._players.keys()) {
+        activePlayers.delete(player);
+        this.playerExperience.send(player, 'stop');
+      }
+    } else {
+      for (let id in coordinates) {
+        const center = coordinates[id];
+
+        for (let player of this._players.keys()) {
+          const inArea = this.inArea(player.coordinates, center, radius);
+          const isActive = activePlayers.has(player);
+
+          if (inArea && !isActive) {
+            // weirdo
+            activePlayers.add(player);
+            this.playerExperience.send(player, 'start');
+          } else if (!inArea && isActive) {
+            // weirdo
+            activePlayers.delete(player);
+            this.playerExperience.send(player, 'stop');
+          }
+        }
+      }
+    }
+  }
+
+  // could probably be done stay in square space...
+  inArea(point, center, radius) {
+    const x = point[0] - center[0];
+    const y = point[1] - center[1];
+    const distance = Math.sqrt(x * x + y * y);
+
+    return distance < radius;
   }
 
   /**
@@ -154,119 +229,119 @@ export default class SoloistExperience extends ServerExperience {
    * y:Number]`).
    * @return {Number} Squared distance between the two points.
    */
-  _getDistance(a, b) {
-    const x = (a[0] - b[0]) * this._widthNormalisation;
-    const x2 = x * x;
+  // _getDistance(a, b) {
+  //   const x = (a[0] - b[0]) * this._widthNormalisation;
+  //   const x2 = x * x;
 
-    const y = (a[1] - b[1]) * this._heightNormalisation;
-    const y2 = y * y;
+  //   const y = (a[1] - b[1]) * this._heightNormalisation;
+  //   const y2 = y * y;
 
-    return (a === null) ? Infinity : Math.min(1, rInv2 * (x2 + y2));
-  }
+  //   return (a === null) ? Infinity : Math.min(1, rInv2 * (x2 + y2));
+  // }
 
-  /**
-   * Calculate the distance of each player to the closest touch (finger on
-   * screen) and sends messages to the `'player'` clients accordingly.
-   */
-  _updateDistances() {
-    // If at least one finger is on screen
-    if (Object.keys(this._touches).length > 0) {
-      // For each player in the performance
-      for (let player of this._playerPerformance.clients) {
-        let distances = [];
+  // /**
+  //  * Calculate the distance of each player to the closest touch (finger on
+  //  * screen) and sends messages to the `'player'` clients accordingly.
+  //  */
+  // _updateDistances() {
+  //   // If at least one finger is on screen
+  //   if (Object.keys(this._touches).length > 0) {
+  //     // For each player in the performance
+  //     for (let player of this._playerPerformance.clients) {
+  //       let distances = [];
 
-        // Calculate the distance from the player to each touch (finger)
-        for (let id in this._touches) {
-          distances.push(this._getDistance(player.coordinates,
-                                           this._touches[id].coordinates));
-        }
+  //       // Calculate the distance from the player to each touch (finger)
+  //       for (let id in this._touches) {
+  //         distances.push(this._getDistance(player.coordinates,
+  //                                          this._touches[id].coordinates));
+  //       }
 
-        // Get minimum distance among all touches (fingers)
-        let d = getMinOfArray(distances);
+  //       // Get minimum distance among all touches (fingers)
+  //       let d = getMinOfArray(distances);
 
-        // If the player is within range for playing sound
-        if (d < 1 && !player.modules.performance.isPlaying) {
-          // Send message to the player
-          player.send('player:play');
-          // Update the player status
-          player.modules.performance.isPlaying = true;
-        }
-        // Otherwise, and if the player is currently playing sound
-        else if (d === 1 && player.modules.performance.isPlaying) {
-          // Send message to the player
-          player.send('player:mute');
-          // Update the player status
-          player.modules.performance.isPlaying = false;
-        }
-      }
-    }
-    // Otherwise, mute everyone
-    else {
-      // For each player in the performance
-      for (let player of this._playerPerformance.clients) {
-        // If the player is currently playing sound
-        if (player.modules.performance.isPlaying) {
-          // Send message to the player
-          player.send('player:mute');
-          // Update the player status
-          player.modules.performance.isPlaying = false;
-        }
-      }
-    }
-  }
+  //       // If the player is within range for playing sound
+  //       if (d < 1 && !player.modules.performance.isPlaying) {
+  //         // Send message to the player
+  //         player.send('player:play');
+  //         // Update the player status
+  //         player.modules.performance.isPlaying = true;
+  //       }
+  //       // Otherwise, and if the player is currently playing sound
+  //       else if (d === 1 && player.modules.performance.isPlaying) {
+  //         // Send message to the player
+  //         player.send('player:mute');
+  //         // Update the player status
+  //         player.modules.performance.isPlaying = false;
+  //       }
+  //     }
+  //   }
+  //   // Otherwise, mute everyone
+  //   else {
+  //     // For each player in the performance
+  //     for (let player of this._playerPerformance.clients) {
+  //       // If the player is currently playing sound
+  //       if (player.modules.performance.isPlaying) {
+  //         // Send message to the player
+  //         player.send('player:mute');
+  //         // Update the player status
+  //         player.modules.performance.isPlaying = false;
+  //       }
+  //     }
+  //   }
+  // }
 
-  /**
-   * `'soloist:touchstart'` event handler.
-   * Add a new touch to the touches dictionary, and recalculate the distances.
-   * @param {Object} touch Touch.
-   */
-  _onTouchStart(touch) {
-    // Create touch in the dictionary
-    this._touches[touch.id] = {};
-    this._touches[touch.id].id = touch.id;
-    this._touches[touch.id].coordinates = touch.coordinates;
-    this._touches[touch.id].timeout = setTimeout(() => {
-      delete this._touches[touch.id];
-    }, timeoutLength * 1000);
+  // /**
+  //  * `'soloist:touchstart'` event handler.
+  //  * Add a new touch to the touches dictionary, and recalculate the distances.
+  //  * @param {Object} touch Touch.
+  //  */
+  // _onTouchStart(touch) {
+  //   // Create touch in the dictionary
+  //   this._touches[touch.id] = {};
+  //   this._touches[touch.id].id = touch.id;
+  //   this._touches[touch.id].coordinates = touch.coordinates;
+  //   this._touches[touch.id].timeout = setTimeout(() => {
+  //     delete this._touches[touch.id];
+  //   }, timeoutLength * 1000);
 
-    // Make the distances calculations
-    this._updateDistances();
-  }
+  //   // Make the distances calculations
+  //   this._updateDistances();
+  // }
 
-  /**
-   * `'soloist:touchmove'` event handler.
-   * Update the touches dictionary, and recalculate the distances.
-   * @param {Object} touch Touch.
-   */
-  _onTouchMove(touch) {
-    // If the touch is not in the dictionary already (may happen if the finger
-    // slides from the edge of the touchscreen)
-    if (!this._touches[touch.id]) {
-      this._touches[touch.id] = {};
-      this._touches[touch.id].id = touch.id;
-    }
-    // Otherwise, clear timeout
-    else {
-      clearTimeout(this._touches[touch.id].timeout);
-    }
+  // /**
+  //  * `'soloist:touchmove'` event handler.
+  //  * Update the touches dictionary, and recalculate the distances.
+  //  * @param {Object} touch Touch.
+  //  */
+  // _onTouchMove(touch) {
+  //   // If the touch is not in the dictionary already (may happen if the finger
+  //   // slides from the edge of the touchscreen)
+  //   if (!this._touches[touch.id]) {
+  //     this._touches[touch.id] = {};
+  //     this._touches[touch.id].id = touch.id;
+  //   }
+  //   // Otherwise, clear timeout
+  //   else {
+  //     clearTimeout(this._touches[touch.id].timeout);
+  //   }
 
-    // Update the coordinates and timeout
-    this._touches[touch.id].coordinates = touch.coordinates;
-    this._touches[touch.id].timeout = setTimeout(() => {
-      delete this._touches[touch.id];
-    }, timeoutLength * 1000);
+  //   // Update the coordinates and timeout
+  //   this._touches[touch.id].coordinates = touch.coordinates;
+  //   this._touches[touch.id].timeout = setTimeout(() => {
+  //     delete this._touches[touch.id];
+  //   }, timeoutLength * 1000);
 
-    // Make the distances calculations
-    this._updateDistances();
-  }
+  //   // Make the distances calculations
+  //   this._updateDistances();
+  // }
 
-  /**
-   * `'soloist:touchendorcancel'` event handler.
-   * Delete a touch from the touches dictionary, and recalculate the distances.
-   * @param {Object} touch Touch.
-   */
-  _onTouchEndOrCancel(touch) {
-    delete this._touches[touch.id];
-    this._updateDistances();
-  }
+  // /**
+  //  * `'soloist:touchendorcancel'` event handler.
+  //  * Delete a touch from the touches dictionary, and recalculate the distances.
+  //  * @param {Object} touch Touch.
+  //  */
+  // _onTouchEndOrCancel(touch) {
+  //   delete this._touches[touch.id];
+  //   this._updateDistances();
+  // }
 }

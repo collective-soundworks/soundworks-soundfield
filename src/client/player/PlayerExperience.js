@@ -1,4 +1,4 @@
-import soundworks from 'soundworks/client';
+import * as soundworks from 'soundworks/client';
 import WhiteNoiseSynth from './WhiteNoiseSynth.js';
 
 const template = `
@@ -12,14 +12,14 @@ const template = `
 // PlayerPerformance class
 export default class PlayerExperience extends soundworks.Experience {
   constructor() {
-    super('player-experience');
+    super();
 
-    this.welcome = this.require('welcome');
-    this.locator = this.require('locator');
+    this._welcome = this.require('welcome');
+    this._locator = this.require('locator');
 
     // Method bindings to not loose the context.
-    this._onPlay = this._onPlay.bind(this);
-    this._onMute = this._onMute.bind(this);
+    this._onStart = this._onStart.bind(this);
+    this._onStop = this._onStop.bind(this);
   }
 
   init() {
@@ -30,9 +30,9 @@ export default class PlayerExperience extends soundworks.Experience {
     this._synth = new WhiteNoiseSynth();
 
     // use default
-    this.content = { center: 'Listen!' };
-    this.template = template;
-    this.viewCtor = soundworks.display.SegmentedView;
+    this.viewContent = { center: 'Listen!' };
+    this.viewTemplate = template;
+    this.viewCtor = soundworks.SegmentedView;
     this.view = this.createView();
   }
 
@@ -44,22 +44,21 @@ export default class PlayerExperience extends soundworks.Experience {
 
     this.show();
     // setup listeners for server messages
-    this.receive('play', this._onPlay);
-    this.receive('mute', this._onMute);
+    this.receive('start', this._onStart);
+    this.receive('stop', this._onStop);
   }
 
-  _onPlay() {
+  _onStart() {
     // start synth
     this._synth.start();
     // change background color
-    this.view.$el.classList.add('white');
+    this.view.$el.classList.add('active');
   }
 
-  _onMute() {
+  _onStop() {
     // stop synth
     this._synth.stop();
     // change background color
-    this.view.$el.classList.add('black');
-    this.view.$el.classList.remove('white');
+    this.view.$el.classList.remove('active');
   }
 }
