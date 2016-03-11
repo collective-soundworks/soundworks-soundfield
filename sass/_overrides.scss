@@ -1,10 +1,18 @@
 #experience {
   &.soloist {
-    svg {
-      background-color: #121212;
+    .background svg .point {
+      fill: #ffffff;
+    }
+
+    .foreground {
+      opacity: 0.5;
+
+      svg {
+        background-color: transparent;
+      }
 
       .point {
-        fill: #ffffff;
+        fill: $midnight-blue;
       }
     }
   }

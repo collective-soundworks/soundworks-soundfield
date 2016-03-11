@@ -1,6 +1,7 @@
 import * as soundworks from 'soundworks/client';
 import WhiteNoiseSynth from './WhiteNoiseSynth.js';
 
+
 const template = `
   <div class="section-top"></div>
   <div class="section-center flex-center">
@@ -9,17 +10,20 @@ const template = `
   <div class="section-bottom"></div>
 `;
 
-// PlayerPerformance class
+/**
+ * @todo
+ */
 export default class PlayerExperience extends soundworks.Experience {
   constructor() {
     super();
 
-    this._welcome = this.require('welcome');
-    this._locator = this.require('locator');
+    this.require('platform', { features: 'web-audio' });
+    this.require('welcome');
+    this.require('locator');
 
-    // Method bindings to not loose the context.
-    this._onStart = this._onStart.bind(this);
-    this._onStop = this._onStop.bind(this);
+    // bind the methods to the instance to keep a safe `this` in callbacks
+    this.onStart = this.onStart.bind(this);
+    this.onStop = this.onStop.bind(this);
   }
 
   init() {
@@ -44,18 +48,18 @@ export default class PlayerExperience extends soundworks.Experience {
 
     this.show();
     // setup listeners for server messages
-    this.receive('start', this._onStart);
-    this.receive('stop', this._onStop);
+    this.receive('start', this.onStart);
+    this.receive('stop', this.onStop);
   }
 
-  _onStart() {
+  onStart() {
     // start synth
     this._synth.start();
     // change background color
     this.view.$el.classList.add('active');
   }
 
-  _onStop() {
+  onStop() {
     // stop synth
     this._synth.stop();
     // change background color

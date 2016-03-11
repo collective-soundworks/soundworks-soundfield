@@ -27,7 +27,6 @@ export default class WhiteNoiseSynth {
     this.output = audioContext.createGain();
     this.output.connect(audioContext.destination);
     this.output.gain.value = 0;
-    // this.output.gain.setValueAtTime(0, audioContext.currentTime);
 
     /**
      * White noise buffer source node.
@@ -44,13 +43,13 @@ export default class WhiteNoiseSynth {
     const now = audioContext.currentTime;
     this.output.gain.cancelScheduledValues(now);
     this.output.gain.setValueAtTime(this.output.gain.value, now);
-    this.output.gain.linearRampToValueAtTime(1, now + 1);
+    this.output.gain.linearRampToValueAtTime(1, now + 0.75);
   }
 
   stop() {
     const now = audioContext.currentTime;
     this.output.gain.cancelScheduledValues(now);
     this.output.gain.setValueAtTime(this.output.gain.value, now);
-    this.output.gain.linearRampToValueAtTime(0, now + 1);
+    this.output.gain.exponentialRampToValueAtTime(0.0001, now + 1.5);
   }
 }

@@ -110,43 +110,47 @@ export default class SoloistExperience extends Experience {
   }
 
   onInputChange(radius, coordinates) {
-    const squaredRadius = radius * radius;
+    const sqRadius = radius * radius;
     const activePlayers = this._activePlayers;
+    const players = new Set(this._players.keys());
 
     // if coordinates are empty, stop all players
     if (Object.keys(coordinates).length === 0) {
-      for (let player of this._players.keys()) {
-        activePlayers.delete(player);
-        this.send(player, 'stop');
-      }
+      activePlayers.forEach((player) => this.send(player, 'stop'));
+      activePlayers.clear();
     } else {
-      for (let id in coordinates) {
-        const center = coordinates[id];
+      players.forEach((player) => {
+        let inArea = false;
+        const isActive = activePlayers.has(player);
 
-        for (let player of this._players.keys()) {
-          const inArea = this.inArea(player.coordinates, center, squaredRadius);
-          const isActive = activePlayers.has(player);
+        for (let id in coordinates) {
+          const center = coordinates[id];
+          inArea = inArea || this.inArea(player.coordinates, center, sqRadius);
 
-          if (inArea && !isActive) {
-            // weirdo
-            activePlayers.add(player);
-            this.send(player, 'start');
-          } else if (!inArea && isActive) {
-            // weirdo
-            activePlayers.delete(player);
-            this.send(player, 'stop');
+          if (inArea) {
+            if (!isActive) {
+              this.send(player, 'start');
+              activePlayers.add(player);
+            }
+
+            break;
           }
         }
-      }
+
+        if (isActive && !inArea) {
+          this.send(player, 'stop');
+          activePlayers.delete(player);
+        }
+      });
     }
   }
 
   // could probably be done stay in square space...
-  inArea(point, center, squaredRadius) {
+  inArea(point, center, sqRadius) {
     const x = point[0] - center[0];
     const y = point[1] - center[1];
-    const squaredDistance = x * x + y * y;
+    const sqDistance = x * x + y * y;
 
-    return squaredDistance < squaredRadius;
+    return sqDistance < sqRadius;
   }
 }
