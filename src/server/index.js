@@ -2,21 +2,16 @@
 import 'source-map-support/register';
 // Import soundworks (server-side) and experiences
 import * as soundworks from 'soundworks/server';
-import PlayerExperience from './PlayerExperience';
-import SoloistExperience from './SoloistExperience';
+// import PlayerExperience from './PlayerExperience';
+import SoundfieldExperience from './SoundfieldExperience';
 
-const setup = {
-  height: 10,
-  width: 10
-};
+// sets the size of the area, orther setup informations are not needed
+const area = { height: 5, width: 8 };
+// initialize the server with configuration informations
+soundworks.server.init({ setup: { area }, appName: 'Soundfield' });
 
-soundworks.server.init({ setup, appName: 'Soundfield' });
-
-// todo - move everything in one experience
-// Configure locator
-const playerExperience = new PlayerExperience('player');
-// the soloist needs to know all the players
-const soloistExperience = new SoloistExperience('soloist', playerExperience);
+// create the common server experience for both the soloists and the players
+const soundfieldExperience = new SoundfieldExperience(['player', 'soloist']);
 
 soundworks.server.start();
 

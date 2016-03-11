@@ -1,17 +1,20 @@
-#soloist {
-  svg {
-    background-color: #121212;
+#experience {
+  &.soloist {
+    svg {
+      background-color: #121212;
 
-    .point {
-      fill: #ffffff;
+      .point {
+        fill: #ffffff;
+      }
+    }
+  }
+
+  &.player {
+    transition: background-color 400ms;
+
+    &.active {
+      background-color: rgba(255, 255, 255, 0.9);
     }
   }
 }
 
-#player {
-  transition: background-color 400ms;
-
-  &.active {
-    background-color: rgba(255, 255, 255, 0.9);
-  }
-}
