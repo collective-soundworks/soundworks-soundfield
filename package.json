@@ -1,11 +1,13 @@
 {
   "name": "soundfield",
   "authors": [
+    "Benjamin Matuszewski",
     "Sébastien Robaszkiewicz",
     "Norbert Schnell"
   ],
-  "description": "Soundfield is a Soundworks-based application where players indicate their positions on a map, and where a soloist can visualize the players' positions and play sounds on the players' smartphones via a touch interface.",
-  "version": "0.3.0",
+  "description": "Soundfield - Soundworks example application.",
+  "version": "1.0.0",
+  "license": "BSD-3-Clause",
   "scripts": {
     "postinstall": "npm run transpile",
     "start": "node ./bin/runner --start",
