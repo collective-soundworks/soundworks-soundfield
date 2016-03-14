@@ -1,22 +1,23 @@
 import { audioContext } from 'soundworks/client';
 
 /**
- * Create a white noise buffer.
- * @return {AudioBuffer} White noise buffer
+ * Populate a mono `AudioBuffer` with random values and returns it.
+ * @return {AudioBuffer}
  */
 function createWhiteNoiseBuffer() {
-  const bufferSize = 2 * audioContext.sampleRate;
-  const noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
-  const output = noiseBuffer.getChannelData(0);
+  const sampleRate = audioContext.sampleRate;
+  const bufferSize = 2 * sampleRate; // 2 sec
+  const buffer = audioContext.createBuffer(1, bufferSize, sampleRate);
+  const data = buffer.getChannelData(0);
 
   for (var i = 0; i < bufferSize; i++)
-    output[i] = Math.random() * 2 - 1;
+    data[i] = Math.random() * 2 - 1;
 
-  return noiseBuffer;
+  return buffer;
 }
 
 /**
- * The `WhiteNoiseSynth` class creates a white noise synth.
+ * Simple synthesizer producing white noise.
  */
 export default class WhiteNoiseSynth {
   constructor() {
@@ -32,11 +33,11 @@ export default class WhiteNoiseSynth {
      * White noise buffer source node.
      * @type {AudioBufferSourceNode}
      */
-    this.whiteNoise = audioContext.createBufferSource();
-    this.whiteNoise.connect(this.output);
-    this.whiteNoise.buffer = createWhiteNoiseBuffer();
-    this.whiteNoise.loop = true;
-    this.whiteNoise.start(0);
+    this.bufferSource = audioContext.createBufferSource();
+    this.bufferSource.connect(this.output);
+    this.bufferSource.buffer = createWhiteNoiseBuffer();
+    this.bufferSource.loop = true;
+    this.bufferSource.start(0);
   }
 
   start() {

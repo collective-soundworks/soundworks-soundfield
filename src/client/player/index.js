@@ -1,22 +1,18 @@
-// Import soundworks (client side) and Soundfield experience
+// import soundworks (client side) and Soundfield experience
 import * as soundworks from 'soundworks/client';
-import PlayerExperience from './PlayerExperience.js';
+import PlayerExperience from './PlayerExperience';
 
-/**
- * The scenario consists in 3 steps:
- * - initialization of the required APIs ('welcome' service)
- * - getting the location of the user ('locator' service)
- * - the experience
- */
-function bootstrap () {
-  // configuration shared by the server (cf. `views/default.ejs`)
+
+function bootstrap() {
+  // configuration shared by the server (cf. `html/default.ejs`)
   const socketIO = window.CONFIG && window.CONFIG.SOCKET_CONFIG;
   const appName = window.CONFIG && window.CONFIG.APP_NAME;
 
+  // initialize client side `player` application
   soundworks.client.init('player', { socketIO, appName });
+  // instanciate the experience of the `player`
   const playerExperience = new PlayerExperience();
-
-  // start the application.
+  // start the application
   soundworks.client.start();
 }
 
