@@ -24,8 +24,8 @@ export default class SoloistExperience extends soundworks.Experience {
     super();
 
     // the experience requires 2 service:
-    // - the `welcome` service creates the (optionnal) home page of the application
-    this.welcome = this.require('welcome');
+    // - the `platform` service can create the home page of the application
+    this.platform = this.require('platform', { showDialog: true });
     // - the `shared-config` assure the experience has access to certain
     //   server configuration options when it starts
     this.sharedConfig = this.require('shared-config');

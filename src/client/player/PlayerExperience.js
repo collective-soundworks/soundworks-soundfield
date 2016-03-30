@@ -22,14 +22,11 @@ export default class PlayerExperience extends soundworks.Experience {
   constructor() {
     super();
 
-    // the experience requires 3 services:
+    // the experience requires 2 services:
     // - the `platform` service checks for the availability of the requested
-    //   features of the application
+    //   features of the application, and display the home screen of the
+    //   application
     this.require('platform', { features: 'web-audio' });
-    // - the `welcome` service creates the home page of the application. It also
-    //   execute hooks provided by the platform in order to initialize features
-    //   properly (for example: initializing WebAudio on first user interaction)
-    this.require('welcome');
     // - the `locator` service provide a view asking for the approximative
     //   position of the user in the defined `area`
     this.require('locator');
