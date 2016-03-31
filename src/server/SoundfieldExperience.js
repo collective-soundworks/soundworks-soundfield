@@ -33,7 +33,7 @@ export default class SoundfieldExperience extends Experience {
     this.sharedConfig = this.require('shared-config');
     // this instruction adds the sharing of the `setup` entry of the server
     // configuration as a requirement for `soloist`
-    this.sharedConfig.addItem('setup', 'soloist');
+    this.sharedConfig.share('setup', 'soloist');
 
     // the `locator` service is required by the `player` clients to get their
     // approximative position into the defined area
