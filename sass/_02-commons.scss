@@ -175,10 +175,3 @@ p, .normal {
 .soft-blink {
   @include animation('soft-blink 3.6s ease-in-out infinite');
 }
-
-@each $value in $color-list {
-  &.#{nth($value, 1)} {
-    background-color: nth($value, 2);
-  }
-}
-
