@@ -4,12 +4,12 @@ import PlayerExperience from './PlayerExperience';
 
 
 function bootstrap() {
-  // configuration shared by the server (cf. `html/default.ejs`)
-  const socketIO = window.CONFIG && window.CONFIG.SOCKET_CONFIG;
-  const appName = window.CONFIG && window.CONFIG.APP_NAME;
-
-  // initialize client side `player` application
-  soundworks.client.init('player', { socketIO, appName });
+  // configuration received from the server through the `index.html`
+  // @see {~/src/server/index.js}
+  // @see {~/html/default.ejs}
+  const { appName, clientType, socketIO }  = window.soundworksConfig;
+  // initialize the 'player' client
+  soundworks.client.init(clientType, { socketIO, appName });
   // instanciate the experience of the `player`
   const playerExperience = new PlayerExperience();
   // start the application
