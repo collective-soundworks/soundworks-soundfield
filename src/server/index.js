@@ -5,16 +5,24 @@ import * as soundworks from 'soundworks/server';
 import SoundfieldExperience from './SoundfieldExperience';
 
 
-// sets the size of the area, orther setup informations are not needed
-const area = { height: 5, width: 8 };
+const config = {
+  appName: 'Soundfield',
+  // name of the environement, (use NODE_ENV=production to configure express at the same time.)
+  env: (process.env.NODE_ENV || 'development'),
+  // sets the size of the area, orther setup informations are not needed
+  setup: {
+    area: { height: 5, width: 8 }
+  }
+};
 
 // initialize the server with configuration informations
-soundworks.server.init({ setup: { area }, appName: 'Soundfield' });
+soundworks.server.init(config);
 
 // define the configuration object to be passed to the `.ejs` template
 soundworks.server.setClientConfigDefinition((clientType, config, httpRequest) => {
   return {
     clientType: clientType,
+    env: config.env,
     socketIO: config.socketIO,
     appName: config.appName,
     version: config.version,
