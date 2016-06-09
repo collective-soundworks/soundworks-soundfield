@@ -1,6 +1,8 @@
 // import soundworks (client side) and Soundfield experience
 import * as soundworks from 'soundworks/client';
 import PlayerExperience from './PlayerExperience';
+import viewTemplates from '../shared/viewTemplates';
+import viewContent from '../shared/viewContent';
 
 
 function bootstrap() {
@@ -12,6 +14,8 @@ function bootstrap() {
   soundworks.client.init(clientType, { socketIO, appName });
   // instanciate the experience of the `player`
   const playerExperience = new PlayerExperience();
+  soundworks.client.setViewContentDefinitions(viewContent);
+  soundworks.client.setViewTemplateDefinitions(viewTemplates);
   // start the application
   soundworks.client.start();
 }

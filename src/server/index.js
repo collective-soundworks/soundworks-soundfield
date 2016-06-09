@@ -3,19 +3,20 @@ import 'source-map-support/register';
 // import soundworks (server-side) and experience
 import * as soundworks from 'soundworks/server';
 import SoundfieldExperience from './SoundfieldExperience';
+import defaultConfig from './config/default';
 
+let config = null;
 
-const config = {
-  appName: 'Soundfield',
-  // name of the environement, (use NODE_ENV=production to configure express at the same time.)
-  env: (process.env.NODE_ENV || 'development'),
-  // sets the size of the area, orther setup informations are not needed
-  setup: {
-    area: { height: 5, width: 8 }
-  }
-};
+switch(process.env.ENV) {
+  default:
+    config = defaultConfig;
+    break;
+}
 
-// initialize the server with configuration informations
+// configure express environment ('production' enable cache systems)
+process.env.NODE_ENV = config.env;
+
+// initialize application with configuration options
 soundworks.server.init(config);
 
 // define the configuration object to be passed to the `.ejs` template
