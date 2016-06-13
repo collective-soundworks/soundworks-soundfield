@@ -8,6 +8,7 @@ In this example, a *soloist* (for example a participant with a tablet device) co
 git clone https://github.com/collective-soundworks/soundworks-soundfield.git
 cd soundworks-soundfield
 npm install
+npm run transpile
 npm run start
 ```
 
