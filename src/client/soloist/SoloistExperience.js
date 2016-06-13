@@ -94,6 +94,7 @@ export default class SoloistExperience extends soundworks.Experience {
     this.playersSpace.setArea(this.area);
     // create a foreground `SpaceView` for interactions feedback
     this.interactionsSpace = new SpaceView();
+    console.log(this.area);
     this.interactionsSpace.setArea(this.area);
     // add the 2 spaces to the main view
     this.view.setViewComponent('.background', this.playersSpace);

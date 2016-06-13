@@ -3,18 +3,27 @@ import 'source-map-support/register';
 // import soundworks (server-side) and experience
 import * as soundworks from 'soundworks/server';
 import SoundfieldExperience from './SoundfieldExperience';
+import defaultConfig from './config/default';
 
+let config = null;
 
-// sets the size of the area, orther setup informations are not needed
-const area = { height: 5, width: 8 };
+switch(process.env.ENV) {
+  default:
+    config = defaultConfig;
+    break;
+}
 
-// initialize the server with configuration informations
-soundworks.server.init({ setup: { area }, appName: 'Soundfield' });
+// configure express environment ('production' enables cache systems)
+process.env.NODE_ENV = config.env;
+
+// initialize application with configuration options
+soundworks.server.init(config);
 
 // define the configuration object to be passed to the `.ejs` template
 soundworks.server.setClientConfigDefinition((clientType, config, httpRequest) => {
   return {
     clientType: clientType,
+    env: config.env,
     socketIO: config.socketIO,
     appName: config.appName,
     version: config.version,
