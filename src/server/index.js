@@ -2,6 +2,7 @@
 import 'source-map-support/register';
 // import soundworks (server-side) and experience
 import * as soundworks from 'soundworks/server';
+import path from 'path';
 import SoundfieldExperience from './SoundfieldExperience';
 import defaultConfig from './config/default';
 
