@@ -36,10 +36,10 @@ export default {
   // if one of these service is required, this entry shouldn't be removed.
   setup: {
     area: {
-      width: 5,
-      height: 8,
+      width: 8,
+      height: 4,
       // path to an image to be used in the area representation
-      background: null,
+      background: '',
     },
     // list of predefined labels
     labels: null,

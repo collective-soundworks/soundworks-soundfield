@@ -26,7 +26,6 @@ export default class WhiteNoiseSynth {
      * @type {GainNode}
      */
     this.output = audioContext.createGain();
-    this.output.connect(audioContext.destination);
     this.output.gain.value = 0;
 
     /**
@@ -38,6 +37,10 @@ export default class WhiteNoiseSynth {
     this.bufferSource.buffer = createWhiteNoiseBuffer();
     this.bufferSource.loop = true;
     this.bufferSource.start(0);
+  }
+
+  connect(destination) {
+    this.output.connect(audioContext.destination);
   }
 
   start() {
