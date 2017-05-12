@@ -1,8 +1,6 @@
-import * as soundworks from 'soundworks/client';
+import { audioContext, Experience, SegmentedView } from 'soundworks/client';
 import WhiteNoiseSynth from './WhiteNoiseSynth';
 
-
-// html template used by `View` of the `PlayerExperience`
 const template = `
   <div class="section-top"></div>
   <div class="section-center flex-center">
@@ -18,7 +16,7 @@ const template = `
  * client (i.e. `soloist`) that can control the `start` and `stop` of the
  * synthesizer from its own interface.
  */
-export default class PlayerExperience extends soundworks.Experience {
+export default class PlayerExperience extends Experience {
   constructor() {
     super();
 
@@ -37,32 +35,18 @@ export default class PlayerExperience extends soundworks.Experience {
   }
 
   /**
-   * Initialize the experience when all services are ready.
-   */
-  init() {
-    /**
-     * The Synthesizer used in the experience.
-     * @type {WhiteNoiseSynth}
-     */
-    this.synth = new WhiteNoiseSynth();
-
-    // configure and instanciate the view of the experience
-    this.viewContent = { center: 'Listen!' };
-    this.viewTemplate = template;
-    this.viewCtor = soundworks.SegmentedView;
-    this.view = this.createView();
-  }
-
-  /**
    * Start the experience when all services are ready.
    */
   start() {
     super.start();
 
-    // if the experience has never started, initialize it
-    if (!this.hasStarted)
-      this.init();
+    this.synth = new WhiteNoiseSynth();
+    this.synth.connect(audioContext.destination);
 
+    this.view = new SegmentedView(template, { center: 'Listen!' }, {}, {
+      id: this.id,
+      className: 'player',
+    });
     // request the `viewManager` to display the view of the experience
     this.show();
     // setup socket listeners for server messages
@@ -71,19 +55,17 @@ export default class PlayerExperience extends soundworks.Experience {
   }
 
   /**
-   * Callback to be executed when receiving the `start` message from the server.
+   * Callback executed when receiving the `start` message from the server.
    */
   onStartMessage() {
-    // start synth and change background color
     this.synth.start();
     this.view.$el.classList.add('active');
   }
 
   /**
-   * Callback to be executed when receiving the `stop` message from the server.
+   * Callback executed when receiving the `stop` message from the server.
    */
   onStopMessage() {
-    // stop synth and change background color
     this.synth.stop();
     this.view.$el.classList.remove('active');
   }

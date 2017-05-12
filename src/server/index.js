@@ -2,20 +2,24 @@
 import 'source-map-support/register';
 // import soundworks (server-side) and experience
 import * as soundworks from 'soundworks/server';
+import path from 'path';
 import SoundfieldExperience from './SoundfieldExperience';
 import defaultConfig from './config/default';
 
+const configName = process.env.ENV || 'default';
+const configPath = path.join(__dirname, 'config', configName);
 let config = null;
 
-switch(process.env.ENV) {
-  default:
-    config = defaultConfig;
-    break;
+// rely on node `require` for synchronicity
+try {
+  config = require(configPath).default;
+} catch(err) {
+  console.error(`Invalid ENV "${configName}", file "${configPath}.js" not found`);
+  process.exit(1);
 }
 
 // configure express environment ('production' enables cache systems)
 process.env.NODE_ENV = config.env;
-
 // initialize application with configuration options
 soundworks.server.init(config);
 

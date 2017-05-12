@@ -1,16 +1,44 @@
 // Import Soundworks modules (client side)
-import * as soundworks from 'soundworks/client';
-const SpaceView = soundworks.SpaceView;
-const View = soundworks.View;
-const viewport = soundworks.viewport;
-const TouchSurface = soundworks.TouchSurface;
+import { SpaceView, View, viewport, TouchSurface, Experience } from 'soundworks/client';
 
 // define the template of the view used by the experience
 // the template uses some of the helper classes defined in `sass/_02-commons.scss`
-const viewTemplate = `
-  <div class="background fit-container"></div>
-  <div class="foreground fit-container"></div>
-`;
+class SoloistView extends View {
+  constructor(background, foreground) {
+    super('', {}, {}, { id: 'experience', className: 'soloist' });
+
+    this.template = `
+      <div class="background fit-container"></div>
+      <div class="foreground fit-container"></div>
+    `;
+
+    this.background = background;
+    this.foreground = foreground;
+  }
+
+  render(sel) {
+    const $el = super.render(sel);
+
+    const $background = this.background.render();
+    const $foreground = this.foreground.render();
+
+    this.$el.querySelector('.background').appendChild($background);
+    this.$el.querySelector('.foreground').appendChild($foreground);
+
+    return $el;
+  }
+
+  onRender() {
+    super.onRender();
+  }
+
+  show() {
+    super.show();
+
+    this.background.show();
+    this.foreground.show();
+  }
+}
 
 
 /**
@@ -19,7 +47,7 @@ const viewTemplate = `
  * - tracking the soloist's touche(s) on screen and sending their
  *   coordinates to the server.
  */
-export default class SoloistExperience extends soundworks.Experience {
+export default class SoloistExperience extends Experience {
   constructor() {
     super();
 
@@ -81,34 +109,20 @@ export default class SoloistExperience extends soundworks.Experience {
   }
 
   /**
-   * Initialize the experience when all services are ready.
-   */
-  init() {
-    this.area = this.sharedConfig.get('setup.area');
-    // initialize the view of the experience
-    this.viewTemplate = viewTemplate;
-    this.viewCtor = View;
-    this.view = this.createView();
-    // create a background `SpaceView` to display players positions
-    this.playersSpace = new SpaceView();
-    this.playersSpace.setArea(this.area);
-    // create a foreground `SpaceView` for interactions feedback
-    this.interactionsSpace = new SpaceView();
-    console.log(this.area);
-    this.interactionsSpace.setArea(this.area);
-    // add the 2 spaces to the main view
-    this.view.setViewComponent('.background', this.playersSpace);
-    this.view.setViewComponent('.foreground', this.interactionsSpace);
-  }
-
-  /**
    * Start the experience when all services are ready.
    */
   start() {
     super.start();
 
-    if (!this.hasStarted)
-      this.init();
+    this.area = this.sharedConfig.get('setup.area');
+    // create a background `SpaceView` to display players positions
+    this.playersSpace = new SpaceView();
+    this.playersSpace.setArea(this.area);
+    // create a foreground `SpaceView` for interactions feedback
+    this.interactionsSpace = new SpaceView();
+    this.interactionsSpace.setArea(this.area);
+
+    this.view = new SoloistView(this.playersSpace, this.interactionsSpace);
 
     this.show();
 
