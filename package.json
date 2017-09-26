@@ -6,7 +6,7 @@
     "Norbert Schnell"
   ],
   "description": "Soundfield - Soundworks example application.",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "license": "BSD-3-Clause",
   "scripts": {
     "minify": "node ./bin/runner --minify",
@@ -35,7 +35,7 @@
     "fs-extra": "^2.1.2",
     "klaw": "^1.3.1",
     "node-sass": "^4.5.2",
-    "uglifyjs": "^2.4.10",
+    "uglify-js": "^2.4.10",
     "watch": "^1.0.1",
     "watchify": "^3.7.0"
   }
