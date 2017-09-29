@@ -2,7 +2,7 @@
 var fse = require('fs-extra');
 var klaw = require('klaw');
 var path = require('path');
-var uglifyJS = require('uglifyjs');
+var uglifyJS = require('uglify-js');
 var util = require('util');
 var watch = require('watch');
 
@@ -481,8 +481,12 @@ function minify() {
 
       var outFilename = filename.replace(/\.js$/, '.min.js');
       var startTime = new Date().getTime();
-      var result = uglifyJS.minify(filename);
-      // console.log(result.code); // minified output
+      var code = fse.readFileSync(filename).toString();
+      var result = uglifyJS.minify(code);
+
+      if (result.error)
+        throw result.error;
+
       fse.outputFile(outFilename, result.code, function(err) {
         if (err)
           return console.error(err.message);
