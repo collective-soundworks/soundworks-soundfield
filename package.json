@@ -6,7 +6,7 @@
     "Norbert Schnell"
   ],
   "description": "Soundfield - Soundworks example application.",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "license": "BSD-3-Clause",
   "scripts": {
     "minify": "node ./bin/runner --minify",
