@@ -1,16 +1,18 @@
-# Transpiled files and dependencies
+# transpiled files and dependencies
 /node_modules
 /public/js
 /public/css
 /dist
 
-# Application instance specific
-/logs
-/db
-
 # ignore all config except default
 /src/server/config/*
 !/src/server/config/default.js
+
+# application instance specific
+/logs
+/db
+
+/bin/.browserify-cache.json
 
 # ignore junk files
 npm-debug.log
